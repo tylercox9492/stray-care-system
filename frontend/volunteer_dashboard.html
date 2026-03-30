@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Volunteer dashboard — Stray Care System">
+    <title>Dashboard — Stray Care</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background: var(--cream); padding-bottom: var(--s7); }
+
+        /* Logout button — subtle */
+        .btn-logout {
+            background: transparent; border: 1px solid rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.80); padding: 6px 14px;
+            border-radius: var(--r-sm); font-family: var(--font-sans);
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            transition: all var(--ease); min-height: 32px; white-space: nowrap;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.45); color: white; }
+
+        .utility-bar-dash {
+            background: var(--charcoal); color: rgba(255,255,255,0.50);
+            font-size: 12px; padding: 7px var(--s4);
+        }
+        .utility-bar-dash .inner {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: var(--s4); max-width: 1160px; margin: 0 auto;
+        }
+
+        .empty-grid { grid-column: 1/-1; text-align: center; padding: var(--s7); color: var(--warm-light); }
+        .empty-grid p:first-child { font-size: 40px; margin-bottom: var(--s3); }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Utility bar with logout -->
+    <div class="utility-bar-dash">
+        <div class="inner">
+            <div style="display:flex;gap:var(--s4);flex-wrap:wrap;">
+                <span>☎ (613) 555-0192</span>
+                <span>✉ info@straycare.ca</span>
+            </div>
+            <button class="btn-logout" id="logout-btn" aria-label="Log out">Sign out</button>
+        </div>
+    </div>
+
+    <nav class="main-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" aria-label="Stray Care home">
+                <div class="logo-paw" aria-hidden="true">🐾</div>
+                <span class="logo-name">Stray Care</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="sighting_form.html">Report a Sighting</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="social-icons">
+                    <a href="#" class="social-icon fb" aria-label="Facebook">f</a>
+                    <a href="#" class="social-icon tw" aria-label="Twitter">t</a>
+                    <a href="#" class="social-icon li" aria-label="LinkedIn">in</a>
+                    <a href="#" class="social-icon pi" aria-label="Pinterest">P</a>
+                </div>
+                <button class="nav-hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+        <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html">Dashboard</a></li>
+                <li><a href="sighting_form.html">Report a Sighting</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Auth check -->
+    <div id="auth-loading" class="loading-state" role="status" aria-live="polite" style="padding-top:var(--s7);">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Checking your session…</p>
+    </div>
+
+    <main id="main-content" style="display:none;">
+
+        <!-- Dashboard banner -->
+        <div class="dash-banner">
+            <div class="container">
+                <h2 id="banner-heading">Good to see you.</h2>
+                <p id="banner-sub">Loading dogs…</p>
+                <div class="stat-pills" id="stat-pills" aria-label="Dog status counts"></div>
+            </div>
+        </div>
+
+        <!-- Search + filter -->
+        <div class="search-filter-bar" role="search">
+            <div class="search-input-wrapper">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input type="search" class="search-input" id="search-input"
+                       placeholder="Search by name or breed…"
+                       aria-label="Search dogs" autocomplete="off">
+            </div>
+            <div class="filter-buttons" role="group" aria-label="Filter by status">
+                <button class="filter-btn active" data-status="ALL"       aria-pressed="true">All</button>
+                <button class="filter-btn"         data-status="ACTIVE"    aria-pressed="false">Active</button>
+                <button class="filter-btn"         data-status="ADOPTED"   aria-pressed="false">Adopted</button>
+                <button class="filter-btn"         data-status="RELOCATED" aria-pressed="false">Relocated</button>
+            </div>
+        </div>
+
+        <p class="results-count" id="results-count" aria-live="polite"></p>
+
+        <div class="container" style="padding-top:var(--s2);">
+            <div class="dogs-grid" id="dogs-grid" role="list" aria-label="Dog profiles">
+                <div class="loading-state empty-grid">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <p>Loading dogs…</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="site-footer">
+        <span class="footer-logo">Stray Care</span>
+        <p>CST8319 · Software Development Project · Algonquin College · 2026</p>
+    </footer>
+
+    <script>
+        // Hamburger
+        document.getElementById('hamburger-btn').addEventListener('click', () => {
+            const m = document.getElementById('mobile-menu'), b = document.getElementById('hamburger-btn');
+            const open = m.classList.toggle('open');
+            b.setAttribute('aria-expanded', open); m.setAttribute('aria-hidden', !open);
+        });
+
+        const API_BASE = 'http://localhost:8080/api';
+
+        const STATUS = {
+            ACTIVE:    { cls:'active',    label:'Active' },
+            ADOPTED:   { cls:'adopted',   label:'Adopted' },
+            RELOCATED: { cls:'relocated', label:'Relocated' }
+        };
+
+        let allDogs = [], activeFilter = 'ALL', activeSearch = '';
+
+        function fmtDate(iso) {
+            if (!iso) return '';
+            try { return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }); }
+            catch { return ''; }
+        }
+        function esc(str) {
+            const d = document.createElement('div');
+            d.appendChild(document.createTextNode(String(str)));
+            return d.innerHTML;
+        }
+
+        // ── Auth ──
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('jwt_token');
+            if (!token) { location.href = 'login.html?redirect=volunteer_dashboard.html'; return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/dogs`, { headers:{ Authorization:`Bearer ${token}` } });
+
+                if (res.status === 401 || res.status === 403) {
+                    localStorage.removeItem('jwt_token');
+                    alert('Your session expired. Please sign in again.');
+                    location.href = 'login.html?redirect=volunteer_dashboard.html';
+                    return;
+                }
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                allDogs = await res.json();
+                document.getElementById('auth-loading').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+
+                renderBanner(allDogs);
+                renderDogs();
+            } catch {
+                document.getElementById('auth-loading').innerHTML = `
+                    <div class="state-page">
+                        <div class="state-icon">📡</div>
+                        <h2>Couldn't load the dashboard</h2>
+                        <p>The server isn't responding right now. Check your connection and try again.</p>
+                        <button class="btn btn-primary" onclick="location.reload()">Try again</button>
+                    </div>`;
+            }
+        });
+
+        // ── Banner ──
+        function renderBanner(dogs) {
+            // Warm, human greeting
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'Good morning.' : hour < 17 ? 'Good afternoon.' : 'Good evening.';
+            document.getElementById('banner-heading').textContent = greeting;
+
+            const counts = { ACTIVE:0, ADOPTED:0, RELOCATED:0 };
+            dogs.forEach(d => { if (counts[d.status] !== undefined) counts[d.status]++; });
+
+            document.getElementById('banner-sub').textContent =
+                `${dogs.length} dog${dogs.length !== 1 ? 's' : ''} in the system right now.`;
+
+            const pills = document.getElementById('stat-pills');
+            pills.innerHTML = '';
+            Object.entries(counts).forEach(([status, count]) => {
+                if (!count) return;
+                const p = document.createElement('span');
+                p.className = 'stat-pill';
+                p.textContent = `${STATUS[status].label}: ${count}`;
+                pills.appendChild(p);
+            });
+        }
+
+        // ── Filter ──
+        function filtered() {
+            return allDogs.filter(d => {
+                const s = activeSearch.toLowerCase();
+                return (activeFilter === 'ALL' || d.status === activeFilter) &&
+                       (!s || (d.name?.toLowerCase().includes(s)) || (d.breed?.toLowerCase().includes(s)));
+            });
+        }
+
+        // ── Render ──
+        function renderDogs() {
+            const dogs   = filtered();
+            const grid   = document.getElementById('dogs-grid');
+            const countEl= document.getElementById('results-count');
+
+            grid.innerHTML = '';
+            countEl.textContent = dogs.length === 0
+                ? 'No dogs match your filters.'
+                : `Showing ${dogs.length} of ${allDogs.length}`;
+
+            if (!dogs.length) {
+                const empty = document.createElement('div');
+                empty.className = 'empty-grid';
+                empty.innerHTML = `<p>🐕</p>
+                    <p>Nothing here${activeSearch ? ` for "${esc(activeSearch)}"` : ''}.
+                    ${activeFilter !== 'ALL' || activeSearch
+                        ? '<br><button class="btn btn-secondary btn-sm" style="margin-top:12px;" onclick="clearFilters()">Clear filters</button>'
+                        : ''}</p>`;
+                grid.appendChild(empty);
+                return;
+            }
+
+            dogs.forEach(dog => grid.appendChild(makeDogCard(dog)));
+        }
+
+        function makeDogCard(dog) {
+            const s = STATUS[dog.status] || STATUS.ACTIVE;
+            const gender = dog.gender
+                ? (dog.gender.charAt(0).toUpperCase() + dog.gender.slice(1).toLowerCase())
+                : '';
+
+            const card = document.createElement('a');
+            card.className = 'dog-card';
+            card.href      = `dog_profile.html?id=${dog.id}`;
+            card.setAttribute('role', 'listitem');
+            card.setAttribute('aria-label', `${dog.name}, ${s.label}. ${dog.breed || ''}. View profile.`);
+
+            const PLACEHOLDERS = ['images/placeholder-1.jpg','images/placeholder-2.jpg','images/placeholder-3.jpg'];
+            const fallback = PLACEHOLDERS[dog.id % 3];
+            const photo = `<img class="dog-card-img"
+                                src="${dog.photoUrl ? esc(dog.photoUrl) : fallback}"
+                                alt="Photo of ${esc(dog.name)}"
+                                loading="lazy"
+                                onerror="this.src='${fallback}';this.onerror=null;">`;
+
+            card.innerHTML = `
+                ${photo}
+                <div class="dog-card-body">
+                    <h3 class="dog-card-name">${esc(dog.name)}</h3>
+                    <p class="dog-card-breed">${esc(dog.breed || 'Unknown breed')}${gender ? ' · ' + gender : ''}</p>
+                    <span class="status-badge ${s.cls}">${s.label}</span>
+                    <p class="dog-card-meta">Added ${fmtDate(dog.createdAt)}</p>
+                </div>`;
+            return card;
+        }
+
+        // ── Search ──
+        document.getElementById('search-input').addEventListener('input', e => {
+            activeSearch = e.target.value; renderDogs();
+        });
+
+        // ── Filter buttons ──
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+                btn.classList.add('active'); btn.setAttribute('aria-pressed','true');
+                activeFilter = btn.dataset.status; renderDogs();
+            });
+        });
+
+        function clearFilters() {
+            activeSearch = ''; activeFilter = 'ALL';
+            document.getElementById('search-input').value = '';
+            document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+            const allBtn = document.querySelector('.filter-btn[data-status="ALL"]');
+            if (allBtn) { allBtn.classList.add('active'); allBtn.setAttribute('aria-pressed','true'); }
+            renderDogs();
+        }
+
+        // ── Logout ──
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (confirm('Sign out of your volunteer account?')) {
+                localStorage.removeItem('jwt_token');
+                location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>
