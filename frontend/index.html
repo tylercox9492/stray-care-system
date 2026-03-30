@@ -220,9 +220,9 @@
         }
 
         const STATUS_DOT = {
-            ACTIVE:    { cls: 'active',    label: 'Active' },
-            ADOPTED:   { cls: 'adopted',   label: 'Adopted' },
-            RELOCATED: { cls: 'relocated', label: 'Relocated' }
+            active:    { cls: 'active',    label: 'Active' },
+            adopted:   { cls: 'adopted',   label: 'Adopted' },
+            recovered: { cls: 'relocated', label: 'Recovered' }
         };
 
         async function loadFeatured() {
@@ -241,7 +241,7 @@
 
                 grid.innerHTML = '';
                 dogs.forEach(dog => {
-                    const cfg = STATUS_DOT[dog.status] || STATUS_DOT.ACTIVE;
+                    const cfg = STATUS_DOT[dog.status?.toLowerCase()] || STATUS_DOT.active;
                     const a   = document.createElement('a');
                     a.className = 'featured-card';
                     a.href      = `dog_profile.html?id=${dog.id}`;
