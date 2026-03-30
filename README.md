@@ -7,254 +7,119 @@ Algonquin College – Demo 3 Submission
 
 ---
 
-## Demo 3 – Feature Coverage
+## What I Built
 
-### Pages Implemented
+This is the frontend for the Stray Care System — a web app that lets anyone report a stray dog sighting by scanning a QR code on the dog's collar. No app download, no account needed. You scan, see the dog's profile, tap a button to share your location, and submit. Done in under a minute.
 
-| Page | File | Auth Required | Description |
-|------|------|---------------|-------------|
-| Landing Page | `index.html` | No | App entry point with navigation |
-| Dog Profile | `dog_profile.html` | No | Public dog profile view after QR scan |
-| Report Sighting | `sighting_form.html` | No | GPS-enabled sighting report form |
-| Volunteer Dashboard | `volunteer_dashboard.html` | Yes (JWT) | Manage all dogs with search/filter |
-| Login | `login.html` | No | JWT authentication for volunteers |
-| Shared Styles | `styles.css` | — | Mobile-first CSS with variables |
+I built five pages:
+
+- **index.html** — the landing page
+- **dog_profile.html** — loads after a QR scan, shows the dog's info and sighting history
+- **sighting_form.html** — the GPS-enabled form for submitting a sighting
+- **volunteer_dashboard.html** — where volunteers manage all the dogs (login required)
+- **login.html** — JWT login for volunteers
+
+Everything is plain HTML, CSS, and vanilla JavaScript. No frameworks.
 
 ---
 
-## Setup Instructions
+## Running It
 
-### Prerequisites
+The frontend connects to a Spring Boot backend on `http://localhost:8080`. Make sure that's running first (that's Alex's side).
 
-- Modern web browser (Chrome 120+, Firefox 121+, Safari iOS 17+, Edge 120+)
-- Backend Spring Boot API running on `http://localhost:8080`
+**Easiest way — just open the file:**
+Double-click `index.html` and it opens in your browser.
 
-### Running Locally
-
-**Option 1 – Open directly in browser**
-
+**Better way — run a local server:**
 ```bash
-# Windows: double-click any HTML file, or drag to browser
-# Mac/Linux:
-open index.html
-```
-
-**Option 2 – Python HTTP server (recommended)**
-
-```bash
-cd "path/to/straycare-frontend"
 python3 -m http.server 3000
-# Visit: http://localhost:3000
 ```
+Then go to `http://localhost:3000`.
 
-**Option 3 – VS Code Live Server extension**
+**VS Code:**
+Install Live Server, right-click any HTML file, click "Open with Live Server".
 
-1. Install the "Live Server" extension in VS Code
-2. Right-click any HTML file → "Open with Live Server"
-
-### Testing GPS (requires HTTPS)
-
-GPS geolocation requires a secure context (HTTPS) in Chrome and Safari.
-
+**Testing GPS on your phone:**
+GPS requires HTTPS, so `localhost` won't work on mobile. Use ngrok to expose your local server:
 ```bash
-# Install ngrok: https://ngrok.com
 ngrok http 3000
-# Use the HTTPS URL provided (e.g. https://abc123.ngrok.io)
 ```
+Then open the HTTPS URL it gives you on your phone.
 
 ---
 
-## Backend API Requirements
+## API Endpoints Used
 
-The Spring Boot backend must be running on `http://localhost:8080`.
+The backend needs to have these working:
 
-| Method | Endpoint | Auth | Used By |
-|--------|----------|------|---------|
-| `GET` | `/api/dogs` | Public | Dashboard, sighting form dropdown |
-| `GET` | `/api/dogs/{id}` | Public | Dog profile page |
-| `GET` | `/api/sightings/dog/{id}` | Public | Dog profile sighting summary |
-| `POST` | `/api/sightings` | Public | Sighting form submission |
-| `POST` | `/api/auth/login` | Public | Login page |
-
----
-
-## Design Specifications
-
-### Mobile-First Responsive Breakpoints
-
-| Range | Layout |
-|-------|--------|
-| 375px – 767px | Single column, full-width elements |
-| 768px – 1279px | 2-column dog card grid, centred content |
-| 1280px+ | 3-column dog card grid, side-by-side profile layout |
-
-### Color System (CSS Variables)
-
-| Variable | Hex | Usage |
-|----------|-----|-------|
-| `--color-active` | `#27AE60` | Active status, primary buttons |
-| `--color-adopted` | `#3498DB` | Adopted status |
-| `--color-relocated` | `#95A5A6` | Relocated status |
-| `--color-warning` | `#E67E22` | Warnings, nearly-full character count |
-| `--color-error` | `#C0392B` | Errors, validation messages |
-
-### Accessibility
-
-- All interactive elements meet minimum **44×44 px** touch target size
-- All images have descriptive `alt` text
-- Colour is never the sole method of conveying information
-- ARIA roles, `aria-live`, and `aria-label` used throughout
-- Full keyboard navigation with visible `:focus-visible` indicators
-- Skip-to-content links on every page
-- Passes **WCAG AA** contrast ratio (4.5:1 minimum)
+| Method | Endpoint | Who uses it |
+|--------|----------|-------------|
+| `GET` | `/api/dogs` | Dashboard, sighting form |
+| `GET` | `/api/dogs/{id}` | Dog profile page |
+| `GET` | `/api/sightings/dog/{id}` | Dog profile sighting count |
+| `POST` | `/api/sightings` | Sighting form |
+| `POST` | `/api/auth/login` | Login page |
 
 ---
 
-## Feature Highlights
+## Pages in Detail
 
 ### dog_profile.html
 
-- Reads `?id=` from URL; validates input before fetching
-- Parallel-friendly: fetches dog + sightings, handles sightings failure gracefully
-- Three distinct error states: invalid ID, 404 not found, network error
-- Photo fallback (emoji placeholder) if `photoUrl` is null or image fails to load
-- Web Share API integration with clipboard fallback
-- Status badge colours match design specification exactly
+Reads the `?id=` from the URL and fetches the dog's data. If the ID is missing, invalid, or the API returns a 404, it shows a friendly error message instead of breaking. There are three different error states depending on what went wrong.
+
+The sighting count comes from a separate API call. If that one fails it just shows nothing — it doesn't take down the whole page.
+
+The "Report a Sighting" button at the bottom pre-fills the dogId into the sighting form URL automatically.
 
 ### sighting_form.html
 
-- Pre-fills `dogId` from `?dogId=` URL parameter
-- Falls back to a dog dropdown (loaded from `GET /api/dogs`) if no parameter
-- GPS flow: request permission → fill latitude/longitude → button turns green
-- Three GPS error codes handled individually (PERMISSION_DENIED, POSITION_UNAVAILABLE, TIMEOUT)
-- Manual entry unlocked via checkbox when GPS is unavailable
-- Submit button disabled until both coordinates are populated
-- Photo file input with live preview thumbnail
-- Character counter with warning at 90% of 500-character limit
-- Inline field validation with ARIA error announcements
+The main thing here is the GPS button. Tap it, allow location, and it fills in your latitude and longitude automatically. If GPS gets denied or times out, there's a checkbox to enter coordinates manually instead — it doesn't just leave you stuck.
+
+The notes field is optional. The submit button stays disabled until coordinates are filled in. After a successful submit it shows a thank-you screen instead of just resetting the form silently.
+
+Photo upload is wired up with a live preview — the actual Cloudinary integration is on Alex's end.
 
 ### volunteer_dashboard.html
 
-- Checks `localStorage` for `jwt_token` on load; redirects to login if absent
-- Handles 401/403 responses (expired token) separately from other errors
-- Real-time search filters by name and breed simultaneously
-- Four status filter buttons with `aria-pressed` state
-- Stat pills in header show per-status counts
-- Dog cards use CSS Grid: 1 → 2 → 3 columns across breakpoints
-- Image error fallback per card (no broken images)
+Checks for a JWT token in localStorage on load. If there's no token it redirects straight to login. The search bar filters cards by name as you type, and the filter buttons (All / Active / Adopted / Relocated) let you narrow things down quickly.
+
+Logout clears the token and sends you back to the login page.
 
 ### login.html
 
-- Redirects immediately if a valid token is already stored
-- Handles 401 (wrong credentials) vs network errors with distinct messages
-- `?redirect=` parameter preserves the original destination after login
-
----
-
-## Testing Checklist
-
-### dog_profile.html
-
-- [x] Loads with valid dog ID in URL (`?id=1`)
-- [x] Shows error if ID is missing or non-numeric
-- [x] Shows "not found" message on 404 response
-- [x] Photo fallback displayed when `photoUrl` is null or broken
-- [x] Status badge colour correct for ACTIVE / ADOPTED / RELOCATED
-- [x] Sighting count accurate from API array
-- [x] Most recent sighting date/notes displayed
-- [x] Verified badge shown only when `isVerified=true`
-- [x] "Report Sighting" button links to `sighting_form.html?dogId={id}`
-- [x] Loading spinner shown while fetching
-- [x] Responsive at 375px, 768px, 1280px
-
-### sighting_form.html
-
-- [x] `dogId` pre-filled from URL parameter
-- [x] Dog selector dropdown loaded from API when no `dogId` in URL
-- [x] GPS button requests geolocation permission
-- [x] Latitude and longitude auto-filled on GPS success
-- [x] Manual entry enabled when GPS is denied or checkbox checked
-- [x] Submit button disabled until coordinates are provided
-- [x] Form submits `POST /api/sightings` with correct JSON body
-- [x] Success screen shown after submission
-- [x] Network error message shown on failure
-- [x] Notes character counter (0 / 500)
-- [x] Photo file input with preview
-- [x] "Report Another" resets form
-
-### volunteer_dashboard.html
-
-- [x] Redirects to login when no JWT in localStorage
-- [x] Sends `Authorization: Bearer <token>` header
-- [x] Handles 401 (expired session) with redirect and clear
-- [x] All dogs displayed as cards
-- [x] Search filters by name and breed in real-time
-- [x] Status filter buttons work (All / Active / Adopted / Relocated)
-- [x] Card click navigates to `dog_profile.html?id={id}`
-- [x] Logout clears token and redirects to login
-- [x] Card grid: 1 column mobile → 2 tablet → 3 desktop
-
-### login.html
-
-- [x] Submits `POST /api/auth/login` with email + password
-- [x] Stores token in localStorage on success
-- [x] Redirects to `?redirect=` parameter (or dashboard) after login
-- [x] Error message for invalid credentials
-- [x] Error message for network failure
-- [x] Skips login screen if token already present
+If you already have a valid token stored it skips the login screen entirely. Supports a `?redirect=` parameter so after logging in you land back on the page you were trying to reach.
 
 ---
 
 ## Known Limitations
 
-- **Photo upload**: `photoUrl` is submitted as `null` to the API. Cloudinary upload integration is handled by the backend team (Alex). The file input and preview are fully functional on the frontend.
-- **JWT refresh**: Tokens expire after 24 hours (backend-defined). Token refresh is not implemented; users are redirected to login.
-- **Offline mode**: No service worker or offline caching. Requires active connection.
+- **Photo upload**: The file input and preview work, but the actual upload to Cloudinary is handled by the backend. Right now `photoUrl` is submitted as `null`.
+- **Token expiry**: Tokens expire after 24 hours. There's no refresh flow — it just redirects to login.
+- **Offline**: No service worker. Needs a connection to work.
 
 ---
 
-## Challenges & Solutions
+## A Couple Things That Gave Me Trouble
 
-**1. GPS permission denied on iOS Safari**
-*Challenge:* iOS Safari requires HTTPS for `navigator.geolocation`. On `http://localhost`, permission is silently denied without an error callback on some devices.
-*Solution:* Added `ngrok` HTTPS tunnel instructions for local testing. The form gracefully falls back to manual coordinate entry and shows a clear error message describing how to re-enable location access in browser settings.
+**GPS on iOS Safari**
+iOS Safari blocks `navigator.geolocation` over plain HTTP, so testing on localhost doesn't work on a real phone. The error callback doesn't even fire in some cases — it just silently does nothing. I added ngrok to the setup instructions and made the form fall back to manual entry gracefully so it's not a dead end.
 
-**2. Keeping submit button state in sync**
-*Challenge:* The submit button needed to be disabled until coordinates were filled, but coordinates could arrive from three different paths: GPS success, manual entry via checkbox, or GPS error fallback.
-*Solution:* Centralised a `updateSubmitState()` function called by every input event handler and GPS callback, so button state is always derived from current field values rather than individual event paths.
-
----
-
-## Next Steps (Demo 4)
-
-- Health record entry form for volunteers (`health_record_form.html`)
-- Admin QR code generation and printable tag interface
-- Analytics dashboard with sighting map (Leaflet.js)
-- Progressive Web App (PWA) manifest + service worker for offline support
-- Push notifications when a verified sighting is recorded
-
----
-
-## Browser Compatibility
-
-| Browser | Version | Status |
-|---------|---------|--------|
-| Chrome | 120+ | Tested |
-| Safari iOS | 17+ | Tested |
-| Firefox | 121+ | Tested |
-| Edge | 120+ | Tested |
+**Keeping the submit button in sync**
+The button needed to stay disabled until coordinates were filled in, but coordinates could come from three different places: GPS success, manual input, or the GPS-failed fallback. I ended up centralizing it into one `updateSubmitState()` function that every input and GPS callback runs through, so the button state is always based on what's actually in the fields.
 
 ---
 
 ## File Structure
 
 ```
-straycare-frontend/
-├── index.html                  Landing page
-├── dog_profile.html            Public dog profile (post QR scan)
-├── sighting_form.html          GPS sighting report form
-├── volunteer_dashboard.html    Authenticated volunteer view
-├── login.html                  JWT login page
-├── styles.css                  Shared mobile-first stylesheet
-└── README.md                   This file
+stray-care-system/
+├── index.html
+├── dog_profile.html
+├── sighting_form.html
+├── volunteer_dashboard.html
+├── login.html
+├── styles.css
+├── images/
+└── README.md
 ```
