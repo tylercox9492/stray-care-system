@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View this dog's profile and report a sighting.">
+    <title>Dog Profile — Stray Care</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background: var(--cream); }
+
+        /* Sub-header bar below nav */
+        .profile-bar {
+            background: white; border-bottom: 1px solid var(--border-light);
+            padding: 10px var(--s4);
+        }
+        .profile-bar-inner {
+            max-width: 1160px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between; gap: var(--s4);
+        }
+        .breadcrumb {
+            font-size: 13px; color: var(--warm-light);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .breadcrumb a { color: var(--warm-mid); font-weight: 500; }
+        .breadcrumb a:hover { color: var(--amber); text-decoration: none; }
+        .breadcrumb-sep { color: var(--border); }
+
+        /* Share button */
+        .btn-share {
+            background: none; border: 1px solid var(--border); border-radius: var(--r-md);
+            padding: 7px 14px; font-family: var(--font-sans); font-size: 13px;
+            font-weight: 500; color: var(--warm-mid); cursor: pointer;
+            display: flex; align-items: center; gap: 6px; transition: all var(--ease);
+            min-height: 36px;
+        }
+        .btn-share:hover { border-color: var(--amber); color: var(--amber); }
+
+        /* Photo side sticky on desktop */
+        @media (min-width: 1000px) {
+            .profile-layout {
+                display: grid;
+                grid-template-columns: 420px 1fr;
+                gap: var(--s6);
+                align-items: start;
+            }
+            .photo-sticky { position: sticky; top: 80px; }
+        }
+
+        /* CTA strip */
+        .cta-strip {
+            background: white; border-top: 1px solid var(--border-light);
+            padding: var(--s5) var(--s4); margin-top: var(--s3);
+        }
+
+        @media (min-width: 1000px) {
+            .cta-strip { background: transparent; border: none; padding: var(--s5) 0; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="utility-bar">
+        <div class="utility-bar-inner">
+            <div class="utility-contacts">
+                <span>☎ (613) 555-0192</span>
+                <span>✉ info@straycare.ca</span>
+            </div>
+            <a href="sighting_form.html" class="btn-utility">Report a Sighting</a>
+        </div>
+    </div>
+
+    <nav class="main-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" aria-label="Stray Care home">
+                <div class="logo-paw" aria-hidden="true">🐾</div>
+                <span class="logo-name">Stray Care</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html">Dashboard</a></li>
+                <li><a href="sighting_form.html">Report a Sighting</a></li>
+                <li><a href="login.html">Volunteer Login</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="social-icons">
+                    <a href="#" class="social-icon fb" aria-label="Facebook">f</a>
+                    <a href="#" class="social-icon tw" aria-label="Twitter">t</a>
+                    <a href="#" class="social-icon li" aria-label="LinkedIn">in</a>
+                    <a href="#" class="social-icon pi" aria-label="Pinterest">P</a>
+                </div>
+                <button class="nav-hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+        <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html">Dashboard</a></li>
+                <li><a href="sighting_form.html">Report a Sighting</a></li>
+                <li><a href="login.html">Volunteer Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sub-header breadcrumb -->
+    <div class="profile-bar" id="profile-bar">
+        <div class="profile-bar-inner">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="breadcrumb-sep" aria-hidden="true">/</span>
+                <span id="breadcrumb-name">Loading…</span>
+            </nav>
+            <button class="btn-share" id="share-btn" aria-label="Share this profile">
+                <span aria-hidden="true">↗</span> Share
+            </button>
+        </div>
+    </div>
+
+    <main id="main-content">
+
+        <!-- Loading -->
+        <div id="loading-state" class="loading-state" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Loading profile…</p>
+        </div>
+
+        <!-- Error -->
+        <div id="error-state" class="state-page" role="alert" aria-live="assertive" style="display:none;">
+            <div class="state-icon" id="err-icon" aria-hidden="true">⚠️</div>
+            <h2 id="err-title">Something went wrong</h2>
+            <p id="err-msg">An unexpected error occurred.</p>
+            <div id="err-actions" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:260px;"></div>
+        </div>
+
+        <!-- Profile -->
+        <div id="profile-content" style="display:none;" aria-label="Dog profile">
+            <div class="container" style="padding-top:var(--s5);padding-bottom:var(--s3);">
+                <div class="profile-layout">
+
+                    <!-- Photo -->
+                    <div class="photo-sticky">
+                        <div class="dog-photo-wrap" id="photo-wrap">
+                            <!-- Placeholder shown until real photo loads; swapped to real img on success -->
+                            <img id="dog-photo"
+                                 src="images/placeholder-1.jpg"
+                                 alt="Dog photo"
+                                 loading="lazy"
+                                 style="width:100%;height:100%;object-fit:cover;display:block;">
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div>
+                        <!-- Name + badge -->
+                        <div class="card">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s3);flex-wrap:wrap;margin-bottom:6px;">
+                                <h1 class="dog-title" id="dog-name">Loading…</h1>
+                                <span id="status-badge" class="status-badge active" role="status">Active</span>
+                            </div>
+                            <p class="dog-breed-line" id="dog-breed-line"></p>
+                        </div>
+
+                        <!-- Key facts -->
+                        <div class="card">
+                            <div class="info-row">
+                                <span class="info-icon" aria-hidden="true">📍</span>
+                                <div class="info-content">
+                                    <p class="info-label">Rescued from</p>
+                                    <p class="info-value" id="rescue-location">—</p>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon" aria-hidden="true">📅</span>
+                                <div class="info-content">
+                                    <p class="info-label">Rescue date</p>
+                                    <p class="info-value" id="rescue-date">—</p>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-icon" aria-hidden="true">👁</span>
+                                <div class="info-content">
+                                    <p class="info-label">Total sightings</p>
+                                    <p class="info-value" id="sighting-count">—</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Last sighting -->
+                        <div class="card">
+                            <p style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--warm-light);margin-bottom:var(--s3);">Most Recent Sighting</p>
+                            <div class="sighting-box" id="sighting-box">
+                                <p class="no-sightings">No sightings yet — be the first to report one.</p>
+                            </div>
+                        </div>
+
+                    </div><!-- /right col -->
+                </div><!-- /layout -->
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-strip">
+                <div class="container">
+                    <div class="content-xs">
+                        <a id="report-btn" href="sighting_form.html" class="btn btn-primary btn-block btn-lg">
+                            Report a Sighting
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /profile-content -->
+    </main>
+
+    <footer class="site-footer">
+        <span class="footer-logo">Stray Care</span>
+        <p>CST8319 · Software Development Project · Algonquin College · 2026</p>
+    </footer>
+
+    <script>
+        // Hamburger
+        document.getElementById('hamburger-btn').addEventListener('click', () => {
+            const m = document.getElementById('mobile-menu'), b = document.getElementById('hamburger-btn');
+            const open = m.classList.toggle('open');
+            b.setAttribute('aria-expanded', open); m.setAttribute('aria-hidden', !open);
+        });
+
+        const API_BASE = 'http://localhost:8080/api';
+
+        const STATUS = {
+            ACTIVE:    { cls: 'active',    label: 'Active' },
+            ADOPTED:   { cls: 'adopted',   label: 'Adopted' },
+            RELOCATED: { cls: 'relocated', label: 'Relocated' }
+        };
+
+        function fmtDate(iso) {
+            if (!iso) return 'Unknown';
+            try { return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }); }
+            catch { return 'Unknown'; }
+        }
+        function fmtDateTime(iso) {
+            if (!iso) return 'Unknown';
+            try {
+                const d = new Date(iso);
+                return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+                     + ' at ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+            } catch { return 'Unknown'; }
+        }
+        function esc(str) {
+            const d = document.createElement('div');
+            d.appendChild(document.createTextNode(String(str)));
+            return d.innerHTML;
+        }
+
+        function showLoading() {
+            document.getElementById('loading-state').style.display = 'block';
+            document.getElementById('error-state').style.display   = 'none';
+            document.getElementById('profile-content').style.display = 'none';
+        }
+        function showProfile() {
+            document.getElementById('loading-state').style.display   = 'none';
+            document.getElementById('error-state').style.display     = 'none';
+            document.getElementById('profile-content').style.display = 'block';
+        }
+        function showError(type) {
+            document.getElementById('loading-state').style.display   = 'none';
+            document.getElementById('profile-content').style.display = 'none';
+
+            const configs = {
+                'invalid-id': { icon:'🔖', title:'Invalid QR code',
+                    msg:"This link doesn't point to a valid dog profile. Try scanning the QR tag again.",
+                    actions:[{ label:'Back to home', href:'index.html' }] },
+                'not-found':  { icon:'🐕', title:'Profile not found',
+                    msg:"We couldn't find this dog's profile. The ID may be outdated or the record was removed.",
+                    actions:[{ label:'Back to home', href:'index.html' }, { label:'Report an issue', href:'mailto:info@straycare.ca' }] },
+                'network':    { icon:'📡', title:'Connection problem',
+                    msg:"We can't reach the server right now. Check your internet connection and try again.",
+                    actions:[{ label:'Try again', onclick: ()=>location.reload() }] }
+            };
+            const c = configs[type] || configs['network'];
+
+            document.getElementById('err-icon').textContent  = c.icon;
+            document.getElementById('err-title').textContent = c.title;
+            document.getElementById('err-msg').textContent   = c.msg;
+
+            const el = document.getElementById('err-actions');
+            el.innerHTML = '';
+            c.actions.forEach(a => {
+                if (a.onclick) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-primary btn-block'; btn.textContent = a.label;
+                    btn.addEventListener('click', a.onclick); el.appendChild(btn);
+                } else {
+                    const lnk = document.createElement('a');
+                    lnk.className = 'btn btn-secondary btn-block'; lnk.textContent = a.label; lnk.href = a.href;
+                    el.appendChild(lnk);
+                }
+            });
+            document.getElementById('error-state').style.display = 'flex';
+        }
+
+        function renderProfile(dog, sightings) {
+            document.title = `${dog.name} — Stray Care`;
+            document.getElementById('breadcrumb-name').textContent = dog.name;
+
+            // Photo — use real URL if available, otherwise pick a placeholder by dog ID
+            const PLACEHOLDERS = ['images/placeholder-1.jpg','images/placeholder-2.jpg','images/placeholder-3.jpg'];
+            const img = document.getElementById('dog-photo');
+            img.alt = `Photo of ${dog.name}`;
+            if (dog.photoUrl) {
+                img.src = dog.photoUrl;
+                img.onerror = () => { img.src = PLACEHOLDERS[dog.id % 3]; img.onerror = null; };
+            } else {
+                img.src = PLACEHOLDERS[dog.id % 3];
+            }
+
+            // Name
+            document.getElementById('dog-name').textContent = dog.name;
+
+            // Status
+            const s = STATUS[dog.status] || STATUS.ACTIVE;
+            const badge = document.getElementById('status-badge');
+            badge.textContent = s.label;
+            badge.className   = `status-badge ${s.cls}`;
+
+            // Breed line
+            const gender = dog.gender ? (dog.gender.charAt(0) + dog.gender.slice(1).toLowerCase()) : '';
+            document.getElementById('dog-breed-line').textContent = [dog.breed, gender].filter(Boolean).join(' · ');
+
+            // Facts
+            document.getElementById('rescue-location').textContent = dog.rescueLocation || 'Not recorded';
+            document.getElementById('rescue-date').textContent     = fmtDate(dog.createdAt);
+            const count = sightings.length;
+            document.getElementById('sighting-count').textContent  =
+                count === 0 ? 'None yet' : count === 1 ? '1 time' : `${count} times`;
+
+            // Sighting box
+            const box = document.getElementById('sighting-box');
+            if (!sightings.length) {
+                box.innerHTML = '<p class="no-sightings">No sightings yet — be the first to report one.</p>';
+            } else {
+                const latest = [...sightings].sort((a,b) => new Date(b.reportedAt) - new Date(a.reportedAt))[0];
+                let html = `<div class="sighting-row"><span>📅</span><span>${fmtDateTime(latest.reportedAt)}</span></div>`;
+                if (latest.notes) html += `<div class="sighting-row"><span>📝</span><span>${esc(latest.notes)}</span></div>`;
+                if (latest.isVerified) html += `<div class="sighting-row"><span class="verified-pill">✓ Verified by a volunteer</span></div>`;
+                box.innerHTML = html;
+            }
+
+            // Report button
+            document.getElementById('report-btn').href = `sighting_form.html?dogId=${dog.id}`;
+
+            // Share
+            document.getElementById('share-btn').addEventListener('click', async () => {
+                const data = { title:`Help find ${dog.name}`, text:`${dog.name}'s profile on Stray Care`, url: location.href };
+                if (navigator.share && navigator.canShare?.(data)) {
+                    try { await navigator.share(data); } catch { /* cancelled */ }
+                } else {
+                    try {
+                        await navigator.clipboard.writeText(location.href);
+                        const btn = document.getElementById('share-btn');
+                        btn.innerHTML = '<span>✓</span> Copied!';
+                        setTimeout(() => { btn.innerHTML = '<span>↗</span> Share'; }, 2200);
+                    } catch { /* unavailable */ }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(location.search);
+            const dogId  = params.get('id');
+
+            if (!dogId || !/^\d+$/.test(dogId)) { showError('invalid-id'); return; }
+            showLoading();
+
+            try {
+                const res = await fetch(`${API_BASE}/dogs/${dogId}`);
+                if (!res.ok) { showError(res.status === 404 ? 'not-found' : 'network'); return; }
+                const dog = await res.json();
+
+                let sightings = [];
+                try {
+                    const sr = await fetch(`${API_BASE}/sightings/dog/${dogId}`);
+                    if (sr.ok) sightings = await sr.json();
+                } catch { /* continue */ }
+
+                renderProfile(dog, sightings);
+                showProfile();
+            } catch { showError('network'); }
+        });
+    </script>
+</body>
+</html>

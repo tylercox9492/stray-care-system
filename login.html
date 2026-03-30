@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Volunteer login — Stray Care System">
+    <title>Sign In — Stray Care</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --amber:      #C4733A;
+            --amber-dark: #A85E2A;
+            --charcoal:   #1C1B19;
+            --warm-mid:   #6B635A;
+            --warm-light: #A09890;
+            --cream:      #FDFCF9;
+            --border:     #E8E2DB;
+            --error:      #B94040;
+            --error-bg:   #FDF2F2;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 15px;
+            color: var(--charcoal);
+            background: var(--cream);
+        }
+
+        a { color: var(--amber); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── LAYOUT ── */
+        .page {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 860px) {
+            .page {
+                grid-template-columns: 1fr 480px;
+            }
+        }
+
+        /* ── LEFT — PHOTO SIDE ── */
+        .photo-side {
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 860px) {
+            .photo-side { display: block; }
+        }
+
+        .photo-side img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%;
+        }
+
+        /* Soft vignette from right so form side reads clean */
+        .photo-side::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to right,
+                rgba(20, 16, 10, 0.08) 0%,
+                rgba(20, 16, 10, 0.35) 100%
+            );
+        }
+
+        /* Quote overlay bottom-left */
+        .photo-quote {
+            position: absolute;
+            bottom: 48px;
+            left: 40px;
+            right: 80px;
+            z-index: 2;
+            color: white;
+        }
+
+        .photo-quote blockquote {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-style: italic;
+            font-size: 22px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.92);
+            margin-bottom: 12px;
+            text-shadow: 0 1px 6px rgba(0,0,0,0.3);
+        }
+
+        .photo-quote cite {
+            font-size: 12px;
+            font-style: normal;
+            font-weight: 500;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.60);
+        }
+
+        /* ── RIGHT — FORM SIDE ── */
+        .form-side {
+            background: var(--cream);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+
+            /* On mobile: photo as background */
+            background-image: url('images/login-bg.jpg');
+            background-size: cover;
+            background-position: center 30%;
+        }
+
+        @media (min-width: 860px) {
+            .form-side {
+                background-image: none;
+                box-shadow: -12px 0 48px rgba(0,0,0,0.12);
+            }
+        }
+
+        /* Mobile overlay so form reads over photo */
+        .form-side-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px 36px;
+            background: rgba(253, 252, 249, 0.94);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        @media (min-width: 860px) {
+            .form-side-inner {
+                background: var(--cream);
+                backdrop-filter: none;
+                padding: 52px 48px;
+            }
+        }
+
+        /* ── TOP NAV (just a back link) ── */
+        .form-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 52px;
+        }
+
+        .back-link {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--warm-mid);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--charcoal); text-decoration: none; }
+        .back-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+        .need-help {
+            font-size: 13px;
+            color: var(--warm-light);
+        }
+        .need-help a { color: var(--warm-mid); font-weight: 500; }
+        .need-help a:hover { color: var(--amber); }
+
+        /* ── BRAND MARK ── */
+        .brand-mark {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 36px;
+        }
+
+        .brand-paw {
+            width: 36px;
+            height: 36px;
+            background: var(--amber);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .brand-name {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--charcoal);
+            letter-spacing: -0.3px;
+        }
+
+        /* ── HEADING ── */
+        .form-heading {
+            margin-bottom: 32px;
+        }
+
+        .form-heading h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(28px, 4vw, 36px);
+            font-weight: 400;
+            color: var(--charcoal);
+            line-height: 1.15;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-heading p {
+            font-size: 14px;
+            color: var(--warm-mid);
+            line-height: 1.5;
+        }
+
+        /* ── FORM ── */
+        .form-body {
+            flex: 1;
+        }
+
+        .field {
+            margin-bottom: 22px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--warm-mid);
+            margin-bottom: 7px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: var(--charcoal);
+            background: white;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .field input::placeholder {
+            color: #C5BDB5;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: var(--amber);
+            box-shadow: 0 0 0 3px rgba(196, 115, 58, 0.12);
+        }
+
+        /* Error state */
+        .error-msg {
+            display: none;
+            align-items: flex-start;
+            gap: 9px;
+            background: var(--error-bg);
+            border: 1px solid rgba(185, 64, 64, 0.2);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 24px;
+            font-size: 13.5px;
+            color: var(--error);
+            line-height: 1.45;
+        }
+        .error-msg.visible { display: flex; }
+        .error-msg svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+        /* Submit */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: var(--amber);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
+        }
+        .btn-submit:hover:not(:disabled) {
+            background: var(--amber-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(196, 115, 58, 0.30);
+        }
+        .btn-submit:active:not(:disabled) { transform: none; box-shadow: none; }
+        .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .btn-spinner {
+            border: 2px solid rgba(255,255,255,0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            width: 16px; height: 16px;
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── FOOTER TEXT ── */
+        .form-foot {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .form-foot p {
+            font-size: 13px;
+            color: var(--warm-light);
+            line-height: 1.6;
+        }
+
+        .form-foot a {
+            color: var(--warm-mid);
+            font-weight: 500;
+        }
+        .form-foot a:hover { color: var(--amber); }
+
+        /* ── BOTTOM ── */
+        .page-foot {
+            padding: 16px 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        @media (min-width: 860px) {
+            .page-foot { padding: 20px 48px; }
+        }
+
+        .page-foot-copy {
+            font-size: 11px;
+            color: var(--warm-light);
+        }
+
+        /* Skip link */
+        .skip-link {
+            position: absolute; left: -9999px; top: 12px; z-index: 999;
+            padding: 8px 14px; background: var(--amber); color: white;
+            border-radius: 6px; font-size: 13px; font-weight: 600;
+        }
+        .skip-link:focus { left: 12px; }
+        :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="page">
+
+        <!-- ══ LEFT: PHOTO ══ -->
+        <div class="photo-side" role="img" aria-label="A golden retriever resting its head on a laptop, looking up warmly">
+            <img src="images/login-bg.jpg" alt="" aria-hidden="true">
+            <div class="photo-quote">
+                <blockquote>"Every stray deserves someone who shows up for them."</blockquote>
+                <cite>The Stray Care Team</cite>
+            </div>
+        </div>
+
+        <!-- ══ RIGHT: FORM ══ -->
+        <div class="form-side">
+            <div class="form-side-inner">
+
+                <!-- Top nav -->
+                <nav class="form-nav" aria-label="Page navigation">
+                    <a href="index.html" class="back-link" aria-label="Back to Stray Care home">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path d="M10 12L6 8l4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Back to site
+                    </a>
+                    <span class="need-help">
+                        New volunteer? <a href="mailto:info@straycare.ca">Get in touch</a>
+                    </span>
+                </nav>
+
+                <main id="main-content" class="form-body">
+
+                    <!-- Brand -->
+                    <div class="brand-mark">
+                        <div class="brand-paw" aria-hidden="true">🐾</div>
+                        <span class="brand-name">Stray Care</span>
+                    </div>
+
+                    <!-- Heading -->
+                    <div class="form-heading">
+                        <h1>Good to see<br>you again.</h1>
+                        <p>Sign in to your volunteer account to continue.</p>
+                    </div>
+
+                    <!-- Error -->
+                    <div class="error-msg" id="error-msg" role="alert" aria-live="assertive">
+                        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 4a.75.75 0 011.5 0v3.5a.75.75 0 01-1.5 0V5zm.75 7a1 1 0 110-2 1 1 0 010 2z"/>
+                        </svg>
+                        <span id="error-text">Hmm, that doesn't look right. Double-check your email and password.</span>
+                    </div>
+
+                    <form id="login-form" novalidate>
+
+                        <div class="field">
+                            <label for="email">Email</label>
+                            <input type="email"
+                                   id="email"
+                                   name="email"
+                                   required
+                                   autocomplete="email"
+                                   placeholder="you@example.com"
+                                   aria-required="true">
+                        </div>
+
+                        <div class="field">
+                            <label for="password">Password</label>
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   required
+                                   autocomplete="current-password"
+                                   placeholder="••••••••"
+                                   aria-required="true">
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="submit-btn">
+                            Sign in
+                        </button>
+
+                    </form>
+
+                    <div class="form-foot">
+                        <p>
+                            Only registered volunteers have dashboard access.
+                            Not a volunteer yet? <a href="mailto:info@straycare.ca">We'd love to have you</a> — just drop us a line.
+                        </p>
+                    </div>
+
+                </main>
+
+                <!-- Bottom -->
+                <footer class="page-foot">
+                    <span class="page-foot-copy">© 2026 Stray Care &mdash; Algonquin College CST8319</span>
+                </footer>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        // Redirect if already signed in
+        (function () {
+            if (localStorage.getItem('jwt_token')) {
+                const p = new URLSearchParams(window.location.search);
+                window.location.href = p.get('redirect') || 'volunteer_dashboard.html';
+            }
+        })();
+
+        const form      = document.getElementById('login-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const errorMsg  = document.getElementById('error-msg');
+        const errorText = document.getElementById('error-text');
+
+        function showError(msg) {
+            errorText.textContent = msg;
+            errorMsg.classList.add('visible');
+            errorMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideError() {
+            errorMsg.classList.remove('visible');
+        }
+
+        // Clear error when user starts typing again
+        form.addEventListener('input', hideError);
+
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            hideError();
+
+            const email    = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showError('Please fill in both your email and password.');
+                return;
+            }
+
+            submitBtn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span> Signing in…';
+            submitBtn.disabled  = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ email, password })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('jwt_token', data.token);
+                    const p = new URLSearchParams(window.location.search);
+                    window.location.href = p.get('redirect') || 'volunteer_dashboard.html';
+                } else if (res.status === 401 || res.status === 403) {
+                    showError("Hmm, that doesn't look right. Double-check your email and password.");
+                } else {
+                    showError('Something went wrong on our end. Please try again in a moment.');
+                }
+            } catch {
+                showError("Can't reach the server right now. Check your connection and try again.");
+            } finally {
+                submitBtn.innerHTML = 'Sign in';
+                submitBtn.disabled  = false;
+            }
+        });
+    </script>
+</body>
+</html>

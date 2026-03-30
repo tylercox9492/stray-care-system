@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Report a stray dog sighting with your GPS location.">
+    <title>Report a Sighting — Stray Care</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background: var(--cream); padding-bottom: var(--s7); }
+
+        /* Page header — calm, not loud */
+        .page-header {
+            background: white; border-bottom: 1px solid var(--border-light);
+            padding: var(--s5) var(--s4);
+        }
+        .page-header-inner { max-width: 1160px; margin: 0 auto; }
+        .page-header h1 {
+            font-family: var(--font-serif); font-size: clamp(22px, 3vw, 30px);
+            font-weight: 400; color: var(--charcoal); letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+        .page-header p { font-size: 13px; color: var(--warm-mid); margin: 0; }
+
+        /* Success screen */
+        .success-screen {
+            display: none; text-align: center;
+            padding: var(--s7) var(--s4);
+        }
+        .success-icon { font-size: 64px; display: block; margin-bottom: var(--s4); }
+        .success-title {
+            font-family: var(--font-serif); font-size: clamp(26px, 4vw, 36px);
+            font-weight: 400; color: var(--green); margin-bottom: var(--s2);
+        }
+        .success-sub { font-size: 15px; color: var(--warm-mid); margin-bottom: var(--s6); line-height: 1.7; }
+        .success-actions { display: flex; flex-direction: column; gap: var(--s2); max-width: 300px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="utility-bar">
+        <div class="utility-bar-inner">
+            <div class="utility-contacts">
+                <span>☎ (613) 555-0192</span>
+                <span>✉ info@straycare.ca</span>
+            </div>
+            <a href="sighting_form.html" class="btn-utility">Report a Sighting</a>
+        </div>
+    </div>
+
+    <nav class="main-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" aria-label="Stray Care home">
+                <div class="logo-paw" aria-hidden="true">🐾</div>
+                <span class="logo-name">Stray Care</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html">Dashboard</a></li>
+                <li><a href="sighting_form.html" class="active">Report a Sighting</a></li>
+                <li><a href="login.html">Volunteer Login</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="social-icons">
+                    <a href="#" class="social-icon fb" aria-label="Facebook">f</a>
+                    <a href="#" class="social-icon tw" aria-label="Twitter">t</a>
+                    <a href="#" class="social-icon li" aria-label="LinkedIn">in</a>
+                    <a href="#" class="social-icon pi" aria-label="Pinterest">P</a>
+                </div>
+                <button class="nav-hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+        <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html">Dashboard</a></li>
+                <li><a href="sighting_form.html">Report a Sighting</a></li>
+                <li><a href="login.html">Volunteer Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <h1>Report a Sighting</h1>
+            <p>Help our volunteers find this dog — your location and a note is all we need.</p>
+        </div>
+    </div>
+
+    <main id="main-content" style="padding-top:var(--s5);">
+
+        <!-- Success -->
+        <div class="success-screen container content-xs" id="success-screen" role="alert" aria-live="polite" tabindex="-1">
+            <span class="success-icon" aria-hidden="true">✅</span>
+            <h2 class="success-title">Thank you.</h2>
+            <p class="success-sub">Your sighting has been recorded. A volunteer will follow up shortly. These reports genuinely help.</p>
+            <div class="success-actions">
+                <button class="btn btn-primary btn-block" id="report-another-btn">Report another sighting</button>
+                <a id="view-profile-link" href="dog_profile.html" class="btn btn-secondary btn-block">Back to dog's profile</a>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div id="form-wrapper" class="container content-narrow">
+
+            <!-- Dog banner (pre-filled) -->
+            <div class="alert alert-info" id="dog-banner" style="display:none;">
+                <span class="alert-icon" aria-hidden="true">🐕</span>
+                <div>Reporting a sighting for <strong id="dog-banner-name">…</strong></div>
+            </div>
+
+            <!-- Dog selector (no dogId in URL) -->
+            <div id="dog-selector" style="display:none;" class="form-card">
+                <span class="form-section-label">Which dog did you see?</span>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label for="dog-select">Select a dog</label>
+                    <select id="dog-select" aria-required="true">
+                        <option value="">Loading…</option>
+                    </select>
+                    <div class="field-error" id="dog-select-error" role="alert">Please select a dog.</div>
+                </div>
+            </div>
+
+            <!-- Submit error -->
+            <div class="alert alert-error" id="submit-error" style="display:none;" role="alert" aria-live="assertive">
+                <span class="alert-icon" aria-hidden="true">⚠</span>
+                <span id="submit-error-text">Submission failed. Please try again.</span>
+            </div>
+
+            <form id="sighting-form" novalidate>
+                <input type="hidden" id="dogId" name="dogId">
+
+                <!-- Location -->
+                <div class="form-card">
+                    <span class="form-section-label">Where did you see the dog?</span>
+
+                    <div class="form-group">
+                        <button type="button" class="btn-gps" id="gps-btn" aria-label="Use my GPS location">
+                            📍 Use my current location
+                        </button>
+                        <p class="help-text" id="gps-status" aria-live="polite">
+                            We'll read your GPS coordinates automatically — no typing required.
+                        </p>
+                    </div>
+
+                    <div class="coords-pair">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="latitude">Latitude</label>
+                            <input type="number" id="latitude" step="any" min="-90" max="90"
+                                   placeholder="45.0000" readonly aria-required="true" aria-describedby="lat-error">
+                            <div class="field-error" id="lat-error" role="alert">Latitude is required.</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="longitude">Longitude</label>
+                            <input type="number" id="longitude" step="any" min="-180" max="180"
+                                   placeholder="-75.0000" readonly aria-required="true" aria-describedby="lng-error">
+                            <div class="field-error" id="lng-error" role="alert">Longitude is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:var(--s3);margin-bottom:0;">
+                        <label class="checkbox-row" for="manual-toggle">
+                            <input type="checkbox" id="manual-toggle">
+                            <span>Enter coordinates manually instead</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-card">
+                    <span class="form-section-label">What did you observe?</span>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="notes">Notes <span class="optional">(optional)</span></label>
+                        <textarea id="notes" maxlength="500" rows="4"
+                                  placeholder="Where exactly did you see them? How did they seem — calm, scared, injured? Any other details help."
+                                  aria-describedby="notes-count"></textarea>
+                        <div class="char-count" id="notes-count" aria-live="polite">0 / 500</div>
+                    </div>
+                </div>
+
+                <!-- Photo -->
+                <div class="form-card">
+                    <span class="form-section-label">Got a photo?</span>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="photo-input">Upload a photo <span class="optional">(optional)</span></label>
+                        <input type="file" id="photo-input" accept="image/*" capture="environment" aria-describedby="photo-help">
+                        <p class="help-text" id="photo-help">A photo makes it much easier for volunteers to confirm the sighting.</p>
+                        <div class="photo-preview" id="photo-preview">
+                            <img id="photo-preview-img" src="" alt="Selected photo preview">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="form-card">
+                    <button type="submit" class="btn btn-primary btn-block btn-lg"
+                            id="submit-btn" disabled aria-describedby="submit-hint">
+                        Submit Report
+                    </button>
+                    <p class="help-text text-center" id="submit-hint" style="margin-top:var(--s2);">
+                        We need a location before you can submit.
+                    </p>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <span class="footer-logo">Stray Care</span>
+        <p>CST8319 · Software Development Project · Algonquin College · 2026</p>
+    </footer>
+
+    <script>
+        // Hamburger
+        document.getElementById('hamburger-btn').addEventListener('click', () => {
+            const m = document.getElementById('mobile-menu'), b = document.getElementById('hamburger-btn');
+            const open = m.classList.toggle('open');
+            b.setAttribute('aria-expanded', open); m.setAttribute('aria-hidden', !open);
+        });
+
+        const API_BASE = 'http://localhost:8080/api';
+
+        const gpsBtn      = document.getElementById('gps-btn');
+        const latInput    = document.getElementById('latitude');
+        const lngInput    = document.getElementById('longitude');
+        const manualCb    = document.getElementById('manual-toggle');
+        const notesEl     = document.getElementById('notes');
+        const notesCt     = document.getElementById('notes-count');
+        const photoInput  = document.getElementById('photo-input');
+        const photoPreview= document.getElementById('photo-preview');
+        const photoImg    = document.getElementById('photo-preview-img');
+        const submitBtn   = document.getElementById('submit-btn');
+        const submitHint  = document.getElementById('submit-hint');
+        const submitErr   = document.getElementById('submit-error');
+        const form        = document.getElementById('sighting-form');
+        const successScr  = document.getElementById('success-screen');
+        const formWrapper = document.getElementById('form-wrapper');
+        const gpsStatus   = document.getElementById('gps-status');
+
+        let currentDogId = null;
+
+        // ── Init ──
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(location.search);
+            const dogIdP = params.get('dogId');
+
+            if (dogIdP && /^\d+$/.test(dogIdP)) {
+                currentDogId = parseInt(dogIdP, 10);
+                document.getElementById('dogId').value = currentDogId;
+                await loadDogBanner(currentDogId);
+                document.getElementById('view-profile-link').href = `dog_profile.html?id=${currentDogId}`;
+            } else {
+                document.getElementById('dog-selector').style.display = 'block';
+                await loadDogDropdown();
+            }
+
+            document.getElementById('report-another-btn').addEventListener('click', resetForm);
+        });
+
+        async function loadDogBanner(id) {
+            document.getElementById('dog-banner').style.display = 'flex';
+            try {
+                const res = await fetch(`${API_BASE}/dogs/${id}`);
+                const name = res.ok ? (await res.json()).name : `Dog #${id}`;
+                document.getElementById('dog-banner-name').textContent = name;
+                document.title = `Report Sighting for ${name} — Stray Care`;
+            } catch {
+                document.getElementById('dog-banner-name').textContent = `Dog #${id}`;
+            }
+        }
+
+        async function loadDogDropdown() {
+            const sel = document.getElementById('dog-select');
+            try {
+                const res = await fetch(`${API_BASE}/dogs`);
+                if (!res.ok) throw new Error();
+                const dogs = await res.json();
+                sel.innerHTML = '<option value="">Choose a dog…</option>';
+                dogs.forEach(d => {
+                    const o = document.createElement('option');
+                    o.value = d.id;
+                    o.textContent = `${d.name}${d.breed ? ' — ' + d.breed : ''}`;
+                    sel.appendChild(o);
+                });
+                sel.addEventListener('change', () => {
+                    const v = parseInt(sel.value, 10);
+                    currentDogId = v || null;
+                    document.getElementById('dogId').value = v || '';
+                    document.getElementById('view-profile-link').href = v ? `dog_profile.html?id=${v}` : 'dog_profile.html';
+                    clearErr('dog-select'); updateSubmit();
+                });
+            } catch {
+                sel.innerHTML = '<option value="">Unable to load dogs — try refreshing</option>';
+            }
+        }
+
+        // ── GPS ──
+        gpsBtn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                setGpsStatus("Your browser doesn't support GPS. Please enter coordinates manually.", true);
+                unlockCoords(); return;
+            }
+            gpsBtn.textContent = '📍 Getting your location…';
+            gpsBtn.disabled = true;
+            setGpsStatus('Requesting location access…', false);
+
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    latInput.value = pos.coords.latitude.toFixed(6);
+                    lngInput.value = pos.coords.longitude.toFixed(6);
+                    gpsBtn.textContent = '✓ Location captured';
+                    gpsBtn.disabled = false;
+                    gpsBtn.classList.add('success');
+                    setGpsStatus(`Accurate to ~${Math.round(pos.coords.accuracy)} m`, false);
+                    clearErr('latitude'); clearErr('longitude'); updateSubmit();
+                },
+                err => {
+                    const msgs = {
+                        [err.PERMISSION_DENIED]:     "Location access was denied. Allow it in your browser settings, or tick the checkbox below to type coordinates.",
+                        [err.POSITION_UNAVAILABLE]:  "Location isn't available on this device right now.",
+                        [err.TIMEOUT]:               "Location request timed out — please try again."
+                    };
+                    setGpsStatus(msgs[err.code] || "Couldn't get your location.", true);
+                    gpsBtn.textContent = '📍 Use my current location';
+                    gpsBtn.disabled = false; gpsBtn.classList.remove('success');
+                    unlockCoords();
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        });
+
+        function setGpsStatus(msg, isError) {
+            gpsStatus.textContent = msg;
+            gpsStatus.style.color = isError ? 'var(--error)' : 'var(--warm-light)';
+        }
+
+        function unlockCoords() {
+            manualCb.checked = true;
+            latInput.removeAttribute('readonly'); lngInput.removeAttribute('readonly');
+            latInput.focus();
+        }
+
+        manualCb.addEventListener('change', () => {
+            if (manualCb.checked) {
+                latInput.removeAttribute('readonly'); lngInput.removeAttribute('readonly'); latInput.focus();
+                setGpsStatus('Enter your coordinates below.', false);
+            } else {
+                latInput.setAttribute('readonly', 'true'); lngInput.setAttribute('readonly', 'true');
+                setGpsStatus('We'll read your GPS coordinates automatically.', false);
+            }
+            updateSubmit();
+        });
+
+        latInput.addEventListener('input', () => { clearErr('latitude');  updateSubmit(); });
+        lngInput.addEventListener('input', () => { clearErr('longitude'); updateSubmit(); });
+
+        // ── Notes counter ──
+        notesEl.addEventListener('input', () => {
+            const c = notesEl.value.length;
+            notesCt.textContent = `${c} / 500`;
+            notesCt.classList.toggle('warn', c >= 450);
+        });
+
+        // ── Photo preview ──
+        photoInput.addEventListener('change', () => {
+            const f = photoInput.files[0];
+            if (f && f.type.startsWith('image/')) {
+                const r = new FileReader();
+                r.onload = e => { photoImg.src = e.target.result; photoImg.alt = f.name; photoPreview.classList.add('show'); };
+                r.readAsDataURL(f);
+            } else { photoPreview.classList.remove('show'); }
+        });
+
+        // ── Submit state ──
+        function updateSubmit() {
+            const ready = latInput.value.trim() && lngInput.value.trim() &&
+                          (currentDogId || document.getElementById('dogId').value);
+            submitBtn.disabled = !ready;
+            submitHint.textContent = ready ? '' : 'We need a location before you can submit.';
+        }
+
+        // ── Validation helpers ──
+        function showErr(id, msg) {
+            const e = document.getElementById(`${id}-error`); if (e) { e.textContent = msg; e.classList.add('visible'); }
+            const f = document.getElementById(id); if (f) f.classList.add('invalid');
+        }
+        function clearErr(id) {
+            const e = document.getElementById(`${id}-error`); if (e) e.classList.remove('visible');
+            const f = document.getElementById(id); if (f) f.classList.remove('invalid');
+        }
+        function validate() {
+            let ok = true;
+            if (!document.getElementById('dogId').value) { showErr('dog-select', 'Please select a dog.'); ok = false; }
+            const lat = parseFloat(latInput.value);
+            if (!latInput.value.trim() || isNaN(lat) || lat < -90 || lat > 90) { showErr('latitude', 'Enter a valid latitude (−90 to 90).'); ok = false; }
+            const lng = parseFloat(lngInput.value);
+            if (!lngInput.value.trim() || isNaN(lng) || lng < -180 || lng > 180) { showErr('longitude', 'Enter a valid longitude (−180 to 180).'); ok = false; }
+            return ok;
+        }
+
+        // ── Submit ──
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            submitErr.style.display = 'none';
+            if (!validate()) return;
+
+            const body = {
+                dogId:    parseInt(document.getElementById('dogId').value, 10),
+                latitude: parseFloat(latInput.value),
+                longitude:parseFloat(lngInput.value),
+                notes:    notesEl.value.trim() || null,
+                photoUrl: null
+            };
+
+            submitBtn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span> Submitting…';
+            submitBtn.disabled  = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/sightings`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (res.ok || res.status === 201) {
+                    formWrapper.style.display   = 'none';
+                    successScr.style.display    = 'block';
+                    successScr.focus();
+                } else {
+                    let msg = 'Submission failed.';
+                    try { const d = await res.json(); if (d.message) msg = d.message; } catch {}
+                    document.getElementById('submit-error-text').textContent = msg;
+                    submitErr.style.display = 'flex'; submitErr.scrollIntoView({ behavior:'smooth', block:'nearest' });
+                }
+            } catch {
+                document.getElementById('submit-error-text').textContent = "Can't reach the server right now. Check your connection and try again.";
+                submitErr.style.display = 'flex';
+            } finally {
+                submitBtn.innerHTML = 'Submit Report';
+                submitBtn.disabled  = false;
+                updateSubmit();
+            }
+        });
+
+        // ── Reset ──
+        function resetForm() {
+            form.reset();
+            gpsBtn.textContent = '📍 Use my current location';
+            gpsBtn.disabled = false; gpsBtn.classList.remove('success');
+            setGpsStatus('We'll read your GPS coordinates automatically.', false);
+            latInput.setAttribute('readonly','true'); lngInput.setAttribute('readonly','true');
+            photoPreview.classList.remove('show');
+            notesCt.textContent = '0 / 500'; notesCt.classList.remove('warn');
+            submitErr.style.display = 'none';
+            updateSubmit();
+            formWrapper.style.display = 'block'; successScr.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
