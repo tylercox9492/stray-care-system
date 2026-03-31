@@ -169,21 +169,21 @@
                                 <span class="info-icon" aria-hidden="true">📍</span>
                                 <div class="info-content">
                                     <p class="info-label">Rescued from</p>
-                                    <p class="info-value" id="rescue-location">—</p>
+                                    <p class="info-value" id="rescue-location"></p>
                                 </div>
                             </div>
                             <div class="info-row">
                                 <span class="info-icon" aria-hidden="true">📅</span>
                                 <div class="info-content">
                                     <p class="info-label">Rescue date</p>
-                                    <p class="info-value" id="rescue-date">—</p>
+                                    <p class="info-value" id="rescue-date"></p>
                                 </div>
                             </div>
                             <div class="info-row">
                                 <span class="info-icon" aria-hidden="true">👁</span>
                                 <div class="info-content">
                                     <p class="info-label">Total sightings</p>
-                                    <p class="info-value" id="sighting-count">—</p>
+                                    <p class="info-value" id="sighting-count"></p>
                                 </div>
                             </div>
                         </div>
@@ -192,7 +192,7 @@
                         <div class="card">
                             <p style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--warm-light);margin-bottom:var(--s3);">Most Recent Sighting</p>
                             <div class="sighting-box" id="sighting-box">
-                                <p class="no-sightings">No sightings yet — be the first to report one.</p>
+                                <p class="no-sightings">No sightings yet. Be the first to report one.</p>
                             </div>
                         </div>
 
@@ -350,7 +350,7 @@
             // Sighting box
             const box = document.getElementById('sighting-box');
             if (!sightings.length) {
-                box.innerHTML = '<p class="no-sightings">No sightings yet — be the first to report one.</p>';
+                box.innerHTML = '<p class="no-sightings">No sightings yet. Be the first to report one.</p>';
             } else {
                 const latest = [...sightings].sort((a,b) => new Date(b.reportedAt) - new Date(a.reportedAt))[0];
                 let html = `<div class="sighting-row"><span>📅</span><span>${fmtDateTime(latest.reportedAt)}</span></div>`;

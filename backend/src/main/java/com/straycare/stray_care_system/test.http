@@ -56,3 +56,27 @@ Content-Type: application/json
   "notes": "Spotted near the park",
   "verified": false
 }
+### Verify a sighting
+PUT http://localhost:8080/api/sightings/1/verify
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXNzYUBzdHJheWNhcmUuY29tIiwicm9sZSI6IlZPTFVOVEVFUiIsImlhdCI6MTc3NDkxOTgzNywiZXhwIjoxNzc1MDA2MjM3fQ.Ofe66loPdDLpArsDXZFV8-h09r4zj9FP9RZ6uG2vQ8M
+### Get all health records
+GET http://localhost:8080/api/health-records
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXNzYUBzdHJheWNhcmUuY29tIiwicm9sZSI6IlZPTFVOVEVFUiIsImlhdCI6MTc3NDkxOTgzNywiZXhwIjoxNzc1MDA2MjM3fQ.Ofe66loPdDLpArsDXZFV8-h09r4zj9FP9RZ6uG2vQ8M
+### Search dogs by name
+GET http://localhost:8080/api/dogs/search?name=Buddy
+
+### Search dogs by status
+GET http://localhost:8080/api/dogs/search?status=active
+
+### Get all users (admin only)
+GET http://localhost:8080/api/admin/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXNzYUBzdHJheWNhcmUuY29tIiwicm9sZSI6IlZPTFVOVEVFUiIsImlhdCI6MTc3NDkxOTgzNywiZXhwIjoxNzc1MDA2MjM3fQ.Ofe66loPdDLpArsDXZFV8-h09r4zj9FP9RZ6uG2vQ8M
+
+### Update user role (admin only)
+PUT http://localhost:8080/api/admin/users/1/role
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXNzYUBzdHJheWNhcmUuY29tIiwicm9sZSI6IlZPTFVOVEVFUiIsImlhdCI6MTc3NDkxOTgzNywiZXhwIjoxNzc1MDA2MjM3fQ.Ofe66loPdDLpArsDXZFV8-h09r4zj9FP9RZ6uG2vQ8M
+
+{
+  "role": "VOLUNTEER"
+}

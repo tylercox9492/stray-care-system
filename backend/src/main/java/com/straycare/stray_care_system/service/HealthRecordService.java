@@ -20,4 +20,8 @@ public class HealthRecordService {
     public List<HealthRecord> getHealthRecordsByDogId(Long dogId) {
         return healthRecordRepository.findByDogId(dogId);
     }
+
+    public List<HealthRecord> getAllHealthRecords() {
+    return healthRecordRepository.findAll();
+}
 }

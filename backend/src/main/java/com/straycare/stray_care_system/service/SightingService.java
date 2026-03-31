@@ -23,4 +23,10 @@ public class SightingService {
     public List<Sighting> getAllSightings() {
     return sightingRepository.findAll();
 }
+    public Sighting verifySighting(Long id) {
+    return sightingRepository.findById(id).map(sighting -> {
+        sighting.setVerified(true);
+        return sightingRepository.save(sighting);
+    }).orElseThrow(() -> new RuntimeException("Sighting not found with id " + id));
+}
 }

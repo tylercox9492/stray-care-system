@@ -35,4 +35,9 @@ public class HealthRecordController {
     public ResponseEntity<List<HealthRecord>> getHealthRecordsByDog(@PathVariable Long dogId) {
         return ResponseEntity.ok(healthRecordService.getHealthRecordsByDogId(dogId));
     }
+
+    @GetMapping
+    public ResponseEntity<List<HealthRecord>> getAllHealthRecords() {
+    return ResponseEntity.ok(healthRecordService.getAllHealthRecords());
+}
 }

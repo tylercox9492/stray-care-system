@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.straycare.stray_care_system.model.Sighting;
 import com.straycare.stray_care_system.service.SightingService;
@@ -34,5 +35,15 @@ public class SightingController {
     @GetMapping
     public ResponseEntity<List<Sighting>> getAllSightings() {
     return ResponseEntity.ok(sightingService.getAllSightings());
+}
+    
+    @PutMapping("/{id}/verify")
+    public ResponseEntity<?> verifySighting(@PathVariable Long id) {
+    try {
+        Sighting sighting = sightingService.verifySighting(id);
+        return ResponseEntity.ok(sighting);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body("Failed to verify sighting: " + e.getMessage());
+    }
 }
 }
