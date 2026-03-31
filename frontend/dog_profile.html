@@ -230,9 +230,9 @@
         const API_BASE = 'http://localhost:8080/api';
 
         const STATUS = {
-            ACTIVE:    { cls: 'active',    label: 'Active' },
-            ADOPTED:   { cls: 'adopted',   label: 'Adopted' },
-            RELOCATED: { cls: 'relocated', label: 'Relocated' }
+            active:    { cls: 'active',    label: 'Active' },
+            adopted:   { cls: 'adopted',   label: 'Adopted' },
+            recovered: { cls: 'relocated', label: 'Recovered' }
         };
 
         function fmtDate(iso) {
@@ -320,7 +320,7 @@
             document.getElementById('dog-name').textContent = dog.name;
 
             // Status
-            const s = STATUS[dog.status] || STATUS.ACTIVE;
+            const s = STATUS[dog.status?.toLowerCase()] || STATUS.active;
             const badge = document.getElementById('status-badge');
             badge.textContent = s.label;
             badge.className   = `status-badge ${s.cls}`;

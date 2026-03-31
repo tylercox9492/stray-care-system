@@ -107,9 +107,9 @@
             </div>
             <div class="filter-buttons" role="group" aria-label="Filter by status">
                 <button class="filter-btn active" data-status="ALL"       aria-pressed="true">All</button>
-                <button class="filter-btn"         data-status="ACTIVE"    aria-pressed="false">Active</button>
-                <button class="filter-btn"         data-status="ADOPTED"   aria-pressed="false">Adopted</button>
-                <button class="filter-btn"         data-status="RELOCATED" aria-pressed="false">Relocated</button>
+                <button class="filter-btn"         data-status="active"    aria-pressed="false">Active</button>
+                <button class="filter-btn"         data-status="adopted"   aria-pressed="false">Adopted</button>
+                <button class="filter-btn"         data-status="recovered" aria-pressed="false">Recovered</button>
             </div>
         </div>
 
@@ -142,9 +142,9 @@
         const API_BASE = 'http://localhost:8080/api';
 
         const STATUS = {
-            ACTIVE:    { cls:'active',    label:'Active' },
-            ADOPTED:   { cls:'adopted',   label:'Adopted' },
-            RELOCATED: { cls:'relocated', label:'Relocated' }
+            active:    { cls:'active',    label:'Active' },
+            adopted:   { cls:'adopted',   label:'Adopted' },
+            recovered: { cls:'relocated', label:'Recovered' }
         };
 
         let allDogs = [], activeFilter = 'ALL', activeSearch = '';
@@ -253,7 +253,7 @@
         }
 
         function makeDogCard(dog) {
-            const s = STATUS[dog.status] || STATUS.ACTIVE;
+            const s = STATUS[dog.status?.toLowerCase()] || STATUS.active;
             const gender = dog.gender
                 ? (dog.gender.charAt(0).toUpperCase() + dog.gender.slice(1).toLowerCase())
                 : '';
