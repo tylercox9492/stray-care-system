@@ -196,6 +196,15 @@
                             </div>
                         </div>
 
+                        <!-- Sighting Map -->
+                        <div class="card">
+                            <p class="section-label">Sighting Map</p>
+                            <div id="dog-map-empty" class="no-sightings" style="display:none;">
+                                No sightings yet; map unavailable.
+                            </div>
+                            <div id="dog-map" style="width:100%;height:320px;border-radius:12px;"></div>
+                        </div>
+
                     </div><!-- /right col -->
                 </div><!-- /layout -->
             </div>
@@ -219,6 +228,7 @@
         <p>CST8319 · Software Development Project · Algonquin College · 2026</p>
     </footer>
 
+    <script src="config.js"></script>
     <script>
         // Hamburger
         document.getElementById('hamburger-btn').addEventListener('click', () => {
