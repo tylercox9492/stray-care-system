@@ -20,4 +20,7 @@ public class SightingService {
     public List<Sighting> getSightingsByDogId(Long dogId) {
         return sightingRepository.findByDogId(dogId);
     }
+    public List<Sighting> getAllSightings() {
+    return sightingRepository.findAll();
+}
 }

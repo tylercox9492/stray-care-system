@@ -31,8 +31,8 @@ public class SightingController {
         }
     }
 
-    @GetMapping("/dog/{dogId}")
-    public ResponseEntity<List<Sighting>> getSightingsByDog(@PathVariable Long dogId) {
-        return ResponseEntity.ok(sightingService.getSightingsByDogId(dogId));
-    }
+    @GetMapping
+    public ResponseEntity<List<Sighting>> getAllSightings() {
+    return ResponseEntity.ok(sightingService.getAllSightings());
+}
 }

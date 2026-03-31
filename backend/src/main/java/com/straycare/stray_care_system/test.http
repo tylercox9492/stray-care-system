@@ -42,3 +42,17 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXNzYUBzdHJheWNhcmUuY29tI
   "breed": "Golden Retriever",
   "status": "active"
 }
+### Get all sightings (for heatmap)
+GET http://localhost:8080/api/sightings
+
+### Submit a sighting with verified field
+POST http://localhost:8080/api/sightings
+Content-Type: application/json
+
+{
+  "dog": { "id": 1 },
+  "latitude": 45.3456,
+  "longitude": -75.6789,
+  "notes": "Spotted near the park",
+  "verified": false
+}

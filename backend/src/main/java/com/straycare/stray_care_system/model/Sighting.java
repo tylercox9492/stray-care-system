@@ -15,8 +15,8 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "sightings")
 public class Sighting {
-    
- @Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -37,6 +37,9 @@ public class Sighting {
 
     @Column(name = "reported_at")
     private LocalDateTime reportedAt;
+
+    @Column(name = "verified")
+    private Boolean verified = false;
 
     @PrePersist
     protected void onCreate() {
@@ -67,4 +70,7 @@ public class Sighting {
 
     public LocalDateTime getReportedAt() { return reportedAt; }
     public void setReportedAt(LocalDateTime reportedAt) { this.reportedAt = reportedAt; }
+
+    public Boolean getVerified() { return verified; }
+    public void setVerified(Boolean verified) { this.verified = verified; }
 }
