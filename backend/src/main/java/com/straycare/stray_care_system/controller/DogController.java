@@ -2,6 +2,7 @@ package com.straycare.stray_care_system.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -75,4 +76,10 @@ public ResponseEntity<?> createDog(@RequestBody Dog dog) {
             return ResponseEntity.badRequest().body("Failed to delete dog: " + e.getMessage());
         }
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<Dog>> searchDogs(
+    @RequestParam(required = false) String name,
+    @RequestParam(required = false) String status) {
+    return ResponseEntity.ok(dogService.searchDogs(name, status));
+}
 }

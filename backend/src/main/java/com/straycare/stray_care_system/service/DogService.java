@@ -40,4 +40,11 @@ public class DogService {
     public void deleteDog(Long id) {
         dogRepository.deleteById(id);
     }
+    public List<Dog> searchDogs(String name, String status) {
+    List<Dog> allDogs = dogRepository.findAll();
+    return allDogs.stream()
+        .filter(dog -> name == null || dog.getName().toLowerCase().contains(name.toLowerCase()))
+        .filter(dog -> status == null || dog.getStatus().toString().equalsIgnoreCase(status))
+        .collect(java.util.stream.Collectors.toList());
+}
 }
