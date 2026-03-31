@@ -115,6 +115,16 @@
 
         <p class="results-count" id="results-count" aria-live="polite"></p>
 
+        <div class="container" style="padding-top:var(--s4);">
+            <div class="card">
+                <p class="section-label">Sightings Heatmap</p>
+                <div id="heatmap-empty" class="no-sightings" style="display:none;">
+                    No sightings available for heatmap.
+                </div>
+                <div id="dashboard-map" style="width:100%;height:360px;border-radius:12px;"></div>
+            </div>
+        </div>
+
         <div class="container" style="padding-top:var(--s2);">
             <div class="dogs-grid" id="dogs-grid" role="list" aria-label="Dog profiles">
                 <div class="loading-state empty-grid">
@@ -131,6 +141,7 @@
         <p>CST8319 · Software Development Project · Algonquin College · 2026</p>
     </footer>
 
+    <script src="config.js"></script>
     <script>
         // Hamburger
         document.getElementById('hamburger-btn').addEventListener('click', () => {
