@@ -142,6 +142,7 @@
     </footer>
 
     <script src="config.js"></script>
+    <script src="maps.js"></script>
     <script>
         // Hamburger
         document.getElementById('hamburger-btn').addEventListener('click', () => {
@@ -188,11 +189,28 @@
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                 allDogs = await res.json();
+                await loadGoogleMapsApi();
+
+                let allSightings = [];
+                try {
+                    const sightingsRes = await fetch(`${API_BASE}/sightings`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+
+                    if (sightingsRes.ok) {
+                        const rawSightings = await sightingsRes.json();
+                        allSightings = rawSightings.map(normalizeSighting);
+                    }
+                } catch (error) {
+                    console.error("Failed to load sightings heatmap data:", error);
+                }
+
                 document.getElementById('auth-loading').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
 
                 renderBanner(allDogs);
                 renderDogs();
+                renderSightingsHeatmap(allSightings);
             } catch {
                 document.getElementById('auth-loading').innerHTML = `
                     <div class="state-page">

@@ -229,6 +229,7 @@
     </footer>
 
     <script src="config.js"></script>
+    <script src="maps.js"></script>
     <script>
         // Hamburger
         document.getElementById('hamburger-btn').addEventListener('click', () => {
@@ -354,7 +355,7 @@
                 const latest = [...sightings].sort((a,b) => new Date(b.reportedAt) - new Date(a.reportedAt))[0];
                 let html = `<div class="sighting-row"><span>📅</span><span>${fmtDateTime(latest.reportedAt)}</span></div>`;
                 if (latest.notes) html += `<div class="sighting-row"><span>📝</span><span>${esc(latest.notes)}</span></div>`;
-                if (latest.isVerified) html += `<div class="sighting-row"><span class="verified-pill">✓ Verified by a volunteer</span></div>`;
+                if (latest.verified) html += `<div class="sighting-row"><span class="verified-pill">✓ Verified by a volunteer</span></div>`;
                 box.innerHTML = html;
             }
 
@@ -379,25 +380,44 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(location.search);
-            const dogId  = params.get('id');
+            const dogId = params.get('id');
 
-            if (!dogId || !/^\d+$/.test(dogId)) { showError('invalid-id'); return; }
+            if (!dogId || !/^\d+$/.test(dogId)) {
+                showError('invalid-id');
+                return;
+            }
+
             showLoading();
 
             try {
+                await loadGoogleMapsApi();
+
                 const res = await fetch(`${API_BASE}/dogs/${dogId}`);
-                if (!res.ok) { showError(res.status === 404 ? 'not-found' : 'network'); return; }
+                if (!res.ok) {
+                    showError(res.status === 404 ? 'not-found' : 'network');
+                    return;
+                }
+
                 const dog = await res.json();
 
                 let sightings = [];
                 try {
                     const sr = await fetch(`${API_BASE}/sightings/dog/${dogId}`);
-                    if (sr.ok) sightings = await sr.json();
-                } catch { /* continue */ }
+                    if (sr.ok) {
+                        const rawSightings = await sr.json();
+                        sightings = rawSightings.map(normalizeSighting);
+                    }
+                } catch {
+                    // leave sightings empty
+                }
 
                 renderProfile(dog, sightings);
+                renderDogSightingsMap(sightings);
                 showProfile();
-            } catch { showError('network'); }
+            } catch (error) {
+                console.error(error);
+                showError('network');
+            }
         });
     </script>
 </body>
