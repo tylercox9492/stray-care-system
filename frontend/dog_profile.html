@@ -56,6 +56,50 @@
         @media (min-width: 1000px) {
             .cta-strip { background: transparent; border: none; padding: var(--s5) 0; }
         }
+
+        /* Sighting history list — scrollable */
+        .history-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: var(--s3); gap: var(--s2);
+        }
+        .history-count {
+            font-size: 12px; color: var(--warm-light); font-weight: 500;
+        }
+        .history-scroll {
+            max-height: 380px; overflow-y: auto;
+            padding-right: 6px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .history-scroll::-webkit-scrollbar { width: 6px; }
+        .history-scroll::-webkit-scrollbar-thumb {
+            background: var(--border); border-radius: 3px;
+        }
+        .history-item {
+            padding: var(--s3) 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-item:first-child { padding-top: 0; }
+        .history-when {
+            font-size: 13px; font-weight: 600; color: var(--charcoal);
+            display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+        }
+        .history-when .latest-pill {
+            font-size: 10px; font-weight: 600; letter-spacing: 0.4px;
+            text-transform: uppercase; color: var(--amber);
+            background: rgba(217, 119, 6, 0.08); padding: 2px 7px;
+            border-radius: 999px; margin-left: 4px;
+        }
+        .history-notes {
+            font-size: 13px; color: var(--warm-mid); line-height: 1.55;
+            margin: 4px 0 6px;
+        }
+        .history-meta {
+            display: flex; flex-wrap: wrap; gap: var(--s2);
+            font-size: 12px; color: var(--warm-light);
+        }
+        .history-meta .verified-pill { font-size: 11px; }
     </style>
 </head>
 <body>
@@ -188,10 +232,13 @@
                             </div>
                         </div>
 
-                        <!-- Last sighting -->
+                        <!-- Sighting history -->
                         <div class="card">
-                            <p style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--warm-light);margin-bottom:var(--s3);">Most Recent Sighting</p>
-                            <div class="sighting-box" id="sighting-box">
+                            <div class="history-header">
+                                <p style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--warm-light);margin:0;">Sighting History</p>
+                                <span class="history-count" id="history-count" aria-live="polite"></span>
+                            </div>
+                            <div class="history-scroll" id="sighting-history" tabindex="0" aria-label="Scrollable list of sightings">
                                 <p class="no-sightings">No sightings yet. Be the first to report one.</p>
                             </div>
                         </div>
@@ -347,16 +394,30 @@
             document.getElementById('sighting-count').textContent  =
                 count === 0 ? 'None yet' : count === 1 ? '1 time' : `${count} times`;
 
-            // Sighting box
-            const box = document.getElementById('sighting-box');
+            // Sighting history (full scrollable list, newest first)
+            const histEl   = document.getElementById('sighting-history');
+            const histCt   = document.getElementById('history-count');
             if (!sightings.length) {
-                box.innerHTML = '<p class="no-sightings">No sightings yet. Be the first to report one.</p>';
+                histEl.innerHTML = '<p class="no-sightings">No sightings yet. Be the first to report one.</p>';
+                histCt.textContent = '';
             } else {
-                const latest = [...sightings].sort((a,b) => new Date(b.reportedAt) - new Date(a.reportedAt))[0];
-                let html = `<div class="sighting-row"><span>📅</span><span>${fmtDateTime(latest.reportedAt)}</span></div>`;
-                if (latest.notes) html += `<div class="sighting-row"><span>📝</span><span>${esc(latest.notes)}</span></div>`;
-                if (latest.verified) html += `<div class="sighting-row"><span class="verified-pill">✓ Verified by a volunteer</span></div>`;
-                box.innerHTML = html;
+                const ordered = [...sightings].sort((a,b) => new Date(b.reportedAt) - new Date(a.reportedAt));
+                histCt.textContent = ordered.length === 1 ? '1 report' : `${ordered.length} reports`;
+                histEl.innerHTML = ordered.map((s, i) => {
+                    const verified = s.verified
+                        ? '<span class="verified-pill">✓ Verified</span>'
+                        : '<span style="color:var(--warm-light);">Awaiting review</span>';
+                    const latestPill = i === 0 ? '<span class="latest-pill">Latest</span>' : '';
+                    const notes = s.notes
+                        ? `<p class="history-notes">${esc(s.notes)}</p>`
+                        : '<p class="history-notes" style="font-style:italic;color:var(--warm-light);">No notes provided.</p>';
+                    return `
+                        <div class="history-item">
+                            <div class="history-when">📅 ${fmtDateTime(s.reportedAt)}${latestPill}</div>
+                            ${notes}
+                            <div class="history-meta">${verified}</div>
+                        </div>`;
+                }).join('');
             }
 
             // Report button

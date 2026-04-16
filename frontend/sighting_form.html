@@ -187,10 +187,12 @@
                     <span class="form-section-label">Got a photo?</span>
                     <div class="form-group" style="margin-bottom:0;">
                         <label for="photo-input">Upload a photo <span class="optional">(optional)</span></label>
-                        <input type="file" id="photo-input" accept="image/*" capture="environment" aria-describedby="photo-help">
-                        <p class="help-text" id="photo-help">A photo makes it much easier for volunteers to confirm the sighting.</p>
+                        <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" capture="environment" aria-describedby="photo-help photo-error">
+                        <p class="help-text" id="photo-help">A photo makes it much easier for volunteers to confirm the sighting. JPG, PNG, or WebP — up to 5 MB.</p>
+                        <div class="field-error" id="photo-error" role="alert">Please choose a valid image.</div>
                         <div class="photo-preview" id="photo-preview">
                             <img id="photo-preview-img" src="" alt="Selected photo preview">
+                            <p class="help-text" id="photo-meta" style="margin-top:6px;"></p>
                         </div>
                     </div>
                 </div>
@@ -366,14 +368,62 @@
             notesCt.classList.toggle('warn', c >= 450);
         });
 
-        // ── Photo preview ──
+        // ── Photo preview + validation ──
+        const MAX_PHOTO_BYTES   = 5 * 1024 * 1024; // 5 MB
+        const ALLOWED_PHOTO_TYPES = [
+            'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'
+        ];
+        const photoMeta = document.getElementById('photo-meta');
+
+        function fmtBytes(b) {
+            if (b < 1024) return `${b} B`;
+            if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+            return `${(b / (1024 * 1024)).toFixed(2)} MB`;
+        }
+
         photoInput.addEventListener('change', () => {
+            clearErr('photo');
+            photoPreview.classList.remove('show');
+            photoMeta.textContent = '';
+
             const f = photoInput.files[0];
-            if (f && f.type.startsWith('image/')) {
-                const r = new FileReader();
-                r.onload = e => { photoImg.src = e.target.result; photoImg.alt = f.name; photoPreview.classList.add('show'); };
-                r.readAsDataURL(f);
-            } else { photoPreview.classList.remove('show'); }
+            if (!f) return;
+
+            // Type check — accept HEIC/HEIF too (iOS often reports an empty type for these)
+            const looksLikeHeic = /\.(heic|heif)$/i.test(f.name);
+            const typeOk = ALLOWED_PHOTO_TYPES.includes(f.type) || looksLikeHeic;
+            if (!typeOk) {
+                showErr('photo', 'That file type isn\u2019t supported. Please use a JPG, PNG, or WebP image.');
+                photoInput.value = '';
+                return;
+            }
+
+            // Size check
+            if (f.size > MAX_PHOTO_BYTES) {
+                showErr('photo', `That photo is ${fmtBytes(f.size)}. Please choose one under 5 MB.`);
+                photoInput.value = '';
+                return;
+            }
+
+            // Empty / corrupt guard
+            if (f.size === 0) {
+                showErr('photo', "That file looks empty. Try selecting it again.");
+                photoInput.value = '';
+                return;
+            }
+
+            const r = new FileReader();
+            r.onload = e => {
+                photoImg.src = e.target.result;
+                photoImg.alt = f.name;
+                photoPreview.classList.add('show');
+                photoMeta.textContent = `${f.name} \u00b7 ${fmtBytes(f.size)}`;
+            };
+            r.onerror = () => {
+                showErr('photo', "We couldn\u2019t read that image. Please try a different file.");
+                photoInput.value = '';
+            };
+            r.readAsDataURL(f);
         });
 
         // ── Submit state ──
@@ -409,21 +459,21 @@
             submitErr.style.display = 'none';
             if (!validate()) return;
 
-            const body = {
-                dogId:    parseInt(document.getElementById('dogId').value, 10),
-                latitude: parseFloat(latInput.value),
-                longitude:parseFloat(lngInput.value),
-                notes:    notesEl.value.trim() || null,
-                photoUrl: null
-            };
+            const formData = new FormData();
+            formData.append('dogId',     parseInt(document.getElementById('dogId').value, 10));
+            formData.append('latitude',  parseFloat(latInput.value));
+            formData.append('longitude', parseFloat(lngInput.value));
+            if (notesEl.value.trim()) formData.append('notes', notesEl.value.trim());
+            const photoFile = photoInput.files[0];
+            if (photoFile) formData.append('photo', photoFile);
 
             submitBtn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span> Submitting…';
             submitBtn.disabled  = true;
 
             try {
                 const res = await fetch(`${API_BASE}/sightings`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    method: 'POST',
+                    body: formData
                 });
                 if (res.ok || res.status === 201) {
                     formWrapper.style.display   = 'none';
@@ -453,6 +503,8 @@
             setGpsStatus('We'll read your GPS coordinates automatically.', false);
             latInput.setAttribute('readonly','true'); lngInput.setAttribute('readonly','true');
             photoPreview.classList.remove('show');
+            photoMeta.textContent = '';
+            clearErr('photo');
             notesCt.textContent = '0 / 500'; notesCt.classList.remove('warn');
             submitErr.style.display = 'none';
             updateSubmit();
