@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin dashboard — Stray Care System">
+    <title>Admin Dashboard — Stray Care</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background: var(--cream); padding-bottom: var(--s7); }
+
+        /* Admin banner */
+        .admin-banner {
+            background: linear-gradient(135deg, var(--charcoal) 0%, #2C2A26 100%);
+            color: rgba(255,255,255,0.90);
+            padding: var(--s5) var(--s4);
+        }
+        .admin-banner h2 {
+            font-family: var(--font-serif); font-size: clamp(20px, 3vw, 28px);
+            font-weight: 400; color: white; margin-bottom: 3px; letter-spacing: -0.3px;
+        }
+        .admin-banner p { font-size: 13px; color: rgba(255,255,255,0.55); margin: 0; }
+        .admin-banner .admin-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(196,115,58,0.20); border: 1px solid rgba(196,115,58,0.35);
+            color: var(--amber-light); font-size: 11px; font-weight: 600;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            padding: 3px 10px; border-radius: var(--r-pill); margin-top: var(--s2);
+        }
+
+        /* User table wrapper */
+        .table-card {
+            background: white; border-radius: var(--r-lg);
+            box-shadow: var(--shadow-sm); overflow: hidden;
+        }
+        .table-header {
+            padding: var(--s4) var(--s5);
+            border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: var(--s3);
+        }
+        .table-header h3 {
+            font-size: 16px; font-weight: 600; color: var(--charcoal); margin: 0;
+        }
+        .table-count { font-size: 12px; color: var(--warm-light); }
+
+        /* Responsive table */
+        .table-scroll { overflow-x: auto; }
+        table {
+            width: 100%; border-collapse: collapse; min-width: 640px;
+        }
+        thead { background: var(--cream); }
+        th {
+            text-align: left; padding: 10px var(--s4);
+            font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+            text-transform: uppercase; color: var(--warm-light);
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+        }
+        td {
+            padding: 14px var(--s4); font-size: 14px; color: var(--charcoal);
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: var(--cream); }
+
+        .user-name { font-weight: 600; }
+        .user-email { font-size: 13px; color: var(--warm-mid); }
+        .user-date { font-size: 12px; color: var(--warm-light); white-space: nowrap; }
+
+        /* Role select */
+        .role-select {
+            padding: 6px 10px; border: 1px solid var(--border);
+            border-radius: var(--r-sm); font-size: 13px; font-family: var(--font-sans);
+            background: white; color: var(--charcoal); cursor: pointer;
+            min-height: 34px; min-width: 120px;
+        }
+        .role-select:focus { outline: none; border-color: var(--amber); }
+
+        /* Action buttons */
+        .actions-cell { display: flex; gap: var(--s2); align-items: center; }
+        .btn-delete {
+            background: none; border: 1px solid var(--border); border-radius: var(--r-sm);
+            padding: 5px 12px; font-size: 12px; font-weight: 500; font-family: var(--font-sans);
+            color: var(--warm-mid); cursor: pointer; transition: all var(--ease);
+            min-height: 32px; white-space: nowrap;
+        }
+        .btn-delete:hover { border-color: var(--error); color: var(--error); background: var(--error-bg); }
+
+        /* Toast notification */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--charcoal); color: white; padding: 12px 24px;
+            border-radius: var(--r-md); font-size: 14px; font-weight: 500;
+            box-shadow: var(--shadow-lg); z-index: 9999;
+            opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+        .toast.error { background: var(--error); }
+
+        /* Empty state */
+        .empty-table {
+            text-align: center; padding: var(--s7);
+            color: var(--warm-light); font-size: 14px;
+        }
+
+        /* Logout button */
+        .btn-logout {
+            background: transparent; border: 1px solid rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.80); padding: 6px 14px;
+            border-radius: var(--r-sm); font-family: var(--font-sans);
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            transition: all var(--ease); min-height: 32px; white-space: nowrap;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.45); color: white; }
+
+        .utility-bar-admin {
+            background: var(--charcoal); color: rgba(255,255,255,0.50);
+            font-size: 12px; padding: 7px var(--s4);
+        }
+        .utility-bar-admin .inner {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: var(--s4); max-width: 1160px; margin: 0 auto;
+        }
+
+        /* Mobile polish — 375px */
+        @media (max-width: 420px) {
+            .admin-banner { padding: var(--s4) var(--s3); }
+            .admin-banner h2 { font-size: 20px; }
+            .table-header { padding: var(--s3) var(--s4); flex-direction: column; align-items: flex-start; }
+            th { padding: 8px var(--s3); font-size: 10px; }
+            td { padding: 10px var(--s3); font-size: 13px; }
+            .role-select { min-width: 100px; font-size: 12px; padding: 5px 8px; }
+            .btn-delete { padding: 5px 10px; font-size: 11px; }
+            .utility-bar-admin .inner { flex-direction: column; align-items: flex-start; gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Utility bar with logout -->
+    <div class="utility-bar-admin">
+        <div class="inner">
+            <div style="display:flex;gap:var(--s4);flex-wrap:wrap;">
+                <span>☎ (613) 555-0192</span>
+                <span>✉ info@straycare.ca</span>
+            </div>
+            <button class="btn-logout" id="logout-btn" aria-label="Log out">Sign out</button>
+        </div>
+    </div>
+
+    <nav class="main-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" aria-label="Stray Care home">
+                <div class="logo-paw" aria-hidden="true">🐾</div>
+                <span class="logo-name">Stray Care</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html">Dashboard</a></li>
+                <li><a href="sighting_form.html">Report a Sighting</a></li>
+                <li><a href="admin_dashboard.html" class="active">Admin</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="social-icons">
+                    <a href="#" class="social-icon fb" aria-label="Facebook">f</a>
+                    <a href="#" class="social-icon tw" aria-label="Twitter">t</a>
+                    <a href="#" class="social-icon li" aria-label="LinkedIn">in</a>
+                    <a href="#" class="social-icon pi" aria-label="Pinterest">P</a>
+                </div>
+                <button class="nav-hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+        <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="volunteer_dashboard.html">Dashboard</a></li>
+                <li><a href="sighting_form.html">Report a Sighting</a></li>
+                <li><a href="admin_dashboard.html">Admin</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Auth check -->
+    <div id="auth-loading" class="loading-state" role="status" aria-live="polite" style="padding-top:var(--s7);">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Checking your session…</p>
+    </div>
+
+    <main id="main-content" style="display:none;">
+
+        <!-- Admin banner -->
+        <div class="admin-banner">
+            <div class="container">
+                <h2>Admin Dashboard</h2>
+                <p id="banner-sub">Manage volunteers and user accounts.</p>
+                <span class="admin-pill">🔒 Admin Access</span>
+            </div>
+        </div>
+
+        <!-- User table -->
+        <div class="container" style="padding-top:var(--s5);">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>User Accounts</h3>
+                    <span class="table-count" id="user-count" aria-live="polite"></span>
+                </div>
+                <div class="table-scroll">
+                    <table id="users-table" aria-label="User management table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr><td colspan="6" class="empty-table">Loading users…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <footer class="site-footer">
+        <span class="footer-logo">Stray Care</span>
+        <p>CST8319 · Software Development Project · Algonquin College · 2026</p>
+    </footer>
+
+    <script>
+        // Hamburger
+        document.getElementById('hamburger-btn').addEventListener('click', () => {
+            const m = document.getElementById('mobile-menu'), b = document.getElementById('hamburger-btn');
+            const open = m.classList.toggle('open');
+            b.setAttribute('aria-expanded', open); m.setAttribute('aria-hidden', !open);
+        });
+
+        const API_BASE = 'http://localhost:8080/api';
+        let allUsers = [];
+
+        function getToken() { return localStorage.getItem('jwt_token'); }
+
+        function authHeaders() {
+            return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' };
+        }
+
+        // Session-expired redirect (JWT expiry handling)
+        function handleAuthError(res) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('jwt_token');
+                alert('Your session has expired or you do not have admin access. Please sign in again.');
+                location.href = 'login.html?redirect=admin_dashboard.html';
+                return true;
+            }
+            return false;
+        }
+
+        function fmtDate(iso) {
+            if (!iso) return '—';
+            try { return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }); }
+            catch { return '—'; }
+        }
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.appendChild(document.createTextNode(String(str)));
+            return d.innerHTML;
+        }
+
+        // Toast notifications
+        let toastTimer;
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = isError ? 'toast error show' : 'toast show';
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { t.classList.remove('show'); }, 3000);
+        }
+
+        // ── Load users ──
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = getToken();
+            if (!token) { location.href = 'login.html?redirect=admin_dashboard.html'; return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/users`, { headers: authHeaders() });
+
+                if (handleAuthError(res)) return;
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                allUsers = await res.json();
+
+                document.getElementById('auth-loading').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+
+                renderUsers();
+            } catch {
+                document.getElementById('auth-loading').innerHTML = `
+                    <div class="state-page">
+                        <div class="state-icon">📡</div>
+                        <h2>Couldn't load the admin dashboard</h2>
+                        <p>The server isn't responding or you may not have admin access.</p>
+                        <button class="btn btn-primary" onclick="location.reload()">Try again</button>
+                    </div>`;
+            }
+        });
+
+        // ── Render users table ──
+        function renderUsers() {
+            const tbody = document.getElementById('users-tbody');
+            const countEl = document.getElementById('user-count');
+
+            countEl.textContent = `${allUsers.length} user${allUsers.length !== 1 ? 's' : ''}`;
+
+            if (!allUsers.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-table">No users found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            allUsers.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-user-id', user.id);
+                tr.innerHTML = `
+                    <td style="font-size:12px;color:var(--warm-light);">#${user.id}</td>
+                    <td><span class="user-name">${esc(user.name || '—')}</span></td>
+                    <td><span class="user-email">${esc(user.email)}</span></td>
+                    <td>
+                        <select class="role-select" data-user-id="${user.id}" data-original-role="${user.role}" aria-label="Change role for ${esc(user.name || user.email)}">
+                            <option value="PUBLIC"    ${user.role === 'PUBLIC'    ? 'selected' : ''}>Public</option>
+                            <option value="VOLUNTEER" ${user.role === 'VOLUNTEER' ? 'selected' : ''}>Volunteer</option>
+                            <option value="ADMIN"     ${user.role === 'ADMIN'     ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </td>
+                    <td><span class="user-date">${fmtDate(user.createdAt)}</span></td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn-delete" data-user-id="${user.id}" data-user-name="${esc(user.name || user.email)}" aria-label="Delete ${esc(user.name || user.email)}">
+                                Delete
+                            </button>
+                        </div>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+
+            // Attach event listeners
+            tbody.querySelectorAll('.role-select').forEach(sel => {
+                sel.addEventListener('change', (e) => updateRole(e.target));
+            });
+            tbody.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => deleteUser(e.target.closest('.btn-delete')));
+            });
+        }
+
+        // ── Update role ──
+        async function updateRole(selectEl) {
+            const userId = selectEl.dataset.userId;
+            const newRole = selectEl.value;
+            const originalRole = selectEl.dataset.originalRole;
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ role: newRole })
+                });
+
+                if (handleAuthError(res)) return;
+
+                if (res.ok) {
+                    selectEl.dataset.originalRole = newRole;
+                    // Update local data
+                    const user = allUsers.find(u => u.id == userId);
+                    if (user) user.role = newRole;
+                    showToast(`Role updated to ${newRole.toLowerCase()}.`);
+                } else {
+                    selectEl.value = originalRole; // revert
+                    showToast('Failed to update role.', true);
+                }
+            } catch {
+                selectEl.value = originalRole;
+                showToast("Can't reach the server right now.", true);
+            }
+        }
+
+        // ── Delete user ──
+        async function deleteUser(btn) {
+            const userId = btn.dataset.userId;
+            const userName = btn.dataset.userName;
+
+            if (!confirm(`Are you sure you want to delete ${userName}? This cannot be undone.`)) return;
+
+            btn.textContent = 'Deleting…';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: authHeaders()
+                });
+
+                if (handleAuthError(res)) return;
+
+                if (res.ok) {
+                    allUsers = allUsers.filter(u => u.id != userId);
+                    renderUsers();
+                    showToast(`${userName} has been deleted.`);
+                } else {
+                    btn.textContent = 'Delete';
+                    btn.disabled = false;
+                    showToast('Failed to delete user.', true);
+                }
+            } catch {
+                btn.textContent = 'Delete';
+                btn.disabled = false;
+                showToast("Can't reach the server right now.", true);
+            }
+        }
+
+        // ── Logout ──
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (confirm('Sign out of your admin account?')) {
+                localStorage.removeItem('jwt_token');
+                location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

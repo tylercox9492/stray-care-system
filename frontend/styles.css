@@ -662,3 +662,56 @@ input[type="file"]:hover { border-color: var(--amber); background: var(--amber-l
 /* ── Divider ── */
 .divider { height: 1px; background: var(--border-light); margin: var(--s4) 0; }
 .text-center { text-align: center; }
+
+/* ── Mobile polish — 375px breakpoint ──
+   Fixes tight layouts, text overflow, and ensures tap targets stay ≥ 44px
+   on the smallest common viewport (iPhone SE / Android compact).
+   ------------------------------------------------------------------- */
+@media (max-width: 420px) {
+    /* Stack coordinate inputs on narrow screens */
+    .coords-pair { grid-template-columns: 1fr; }
+
+    /* Prevent utility bar wrap crowding */
+    .utility-bar-inner { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .utility-contacts { gap: var(--s3); }
+
+    /* Nav — tighten padding so logo + hamburger don't collide */
+    .nav-inner { padding: 0 var(--s3); min-height: 54px; }
+    .logo-name { font-size: 17px; }
+    .social-icons { display: none; } /* hide social row on tiny screens */
+
+    /* Hero text doesn't bleed */
+    .hero-section { padding-left: var(--s3); padding-right: var(--s3); }
+    .hero-heading { font-size: clamp(32px, 8vw, 48px); }
+
+    /* Dog cards — less padding */
+    .dog-card-body { padding: var(--s3); }
+    .dog-card-name { font-size: 16px; }
+
+    /* Profile page photo aspect — shorter on narrow screens */
+    .dog-photo-wrap { aspect-ratio: 4/3; }
+
+    /* Search bar stack */
+    .search-filter-bar { padding: var(--s2) var(--s3); }
+    .search-input { font-size: 14px; min-height: 44px; }
+
+    /* Filter pills scroll hint — add padding to first/last */
+    .filter-buttons { padding: 0 var(--s1); }
+
+    /* Featured grid — single col, smaller gap */
+    .featured-grid { gap: var(--s3); }
+
+    /* Footer tighter */
+    .site-footer { padding: var(--s5) var(--s3); font-size: 11px; }
+    .site-footer .footer-logo { font-size: 18px; }
+
+    /* Buttons stay comfortably tappable */
+    .btn { min-height: 44px; padding-left: 16px; padding-right: 16px; }
+    .btn-lg { min-height: 48px; }
+
+    /* Form cards — less margin */
+    .form-card { padding: var(--s4); }
+
+    /* Container tighter gutter */
+    .container { padding: 0 var(--s3); }
+}

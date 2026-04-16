@@ -11,13 +11,14 @@ Algonquin College – Demo 4 (Final) Submission
 
 This is the frontend for the Stray Care System — a web app that lets anyone report a stray dog sighting by scanning a QR code on the dog's collar. No app download, no account needed. You scan, see the dog's profile, tap a button to share your location, and submit. Done in under a minute.
 
-I built five pages:
+I built six pages:
 
 - **index.html** — the landing page
 - **dog_profile.html** — loads after a QR scan, shows the dog's info and sighting history
 - **sighting_form.html** — the GPS-enabled form for submitting a sighting
 - **volunteer_dashboard.html** — where volunteers manage all the dogs (login required)
-- **login.html** — JWT login for volunteers
+- **admin_dashboard.html** — where admins manage user accounts and roles (admin JWT required)
+- **login.html** — JWT login for volunteers and admins
 
 Everything is plain HTML, CSS, and vanilla JavaScript. No frameworks.
 
@@ -59,6 +60,9 @@ The backend needs to have these working:
 | `GET` | `/api/sightings/dog/{id}` | Dog profile — full sighting history |
 | `GET` | `/api/sightings` | Dashboard — heatmap data |
 | `POST` | `/api/sightings` | Sighting form (multipart/form-data with optional photo) |
+| `GET` | `/api/admin/users` | Admin dashboard — user list |
+| `PUT` | `/api/admin/users/{id}/role` | Admin dashboard — role update |
+| `DELETE` | `/api/admin/users/{id}` | Admin dashboard — delete user |
 | `POST` | `/api/auth/login` | Login page |
 
 ---
@@ -87,6 +91,14 @@ Checks for a JWT token in localStorage on load. If there's no token it redirects
 
 Logout clears the token and sends you back to the login page.
 
+### admin_dashboard.html
+
+**New for Demo 4.** JWT-protected admin page that loads the full user list from `GET /api/admin/users` and renders it in a sortable table. Each row has:
+- A **role dropdown** (Public / Volunteer / Admin) that fires a `PUT` to update the user's role immediately on change.
+- A **delete button** with a confirmation dialog — calls `DELETE /api/admin/users/{id}`.
+
+If the JWT is missing the page redirects to login. If any API call returns 401 or 403, the token is cleared and the user is sent back to login with a redirect parameter so they land back on the admin page after signing in. Toast notifications confirm every action.
+
 ### login.html
 
 If you already have a valid token stored it skips the login screen entirely. Supports a `?redirect=` parameter so after logging in you land back on the page you were trying to reach.
@@ -96,7 +108,7 @@ If you already have a valid token stored it skips the login screen entirely. Sup
 ## Known Limitations
 
 - **Photo upload**: Photos are now uploaded via multipart/form-data and stored through Cloudinary. Client-side validation enforces a 5 MB limit and image-type whitelist.
-- **Token expiry**: Tokens expire after 24 hours. There's no refresh flow — it just redirects to login.
+- **Token expiry**: Tokens expire after 24 hours. There's no refresh flow — any 401 or 403 response clears the stored token and redirects to `login.html` with a `?redirect=` parameter so the user lands back where they were.
 - **Offline**: No service worker. Needs a connection to work.
 
 ---
@@ -118,8 +130,9 @@ frontend/
 ├── index.html                 — landing page with featured dogs
 ├── dog_profile.html           — dog profile + scrollable sighting history
 ├── sighting_form.html         — GPS sighting form with photo validation
-├── volunteer_dashboard.html   — JWT-protected dashboard with heatmap
-├── login.html                 — volunteer login (JWT)
+├── volunteer_dashboard.html   — JWT-protected volunteer dashboard with heatmap
+├── admin_dashboard.html       — JWT-protected admin user management
+├── login.html                 — volunteer / admin login (JWT)
 ├── styles.css                 — shared design system
 ├── config.js                  — API keys (Google Maps)
 ├── maps.js                    — Google Maps + sighting normalization utils
