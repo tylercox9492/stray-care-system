@@ -69,6 +69,11 @@ public class SightingController {
         return ResponseEntity.ok(sightingService.getAllSightings());
     }
 
+    @GetMapping("/dog/{dogId}")
+    public ResponseEntity<List<Sighting>> getSightingsByDog(@PathVariable Long dogId) {
+        return ResponseEntity.ok(sightingService.getSightingsByDogId(dogId));
+    }
+
     @PutMapping("/{id}/verify")
     public ResponseEntity<?> verifySighting(@PathVariable Long id) {
         try {

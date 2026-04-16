@@ -41,6 +41,7 @@ function normalizeSighting(raw) {
         notes: raw.notes ?? "",
         reportedAt: raw.reportedAt ?? null,
         photoUrl: raw.photoUrl ?? null,
+        verified: raw.verified ?? false,
         dogId: raw.dog?.id ?? null
     };
 }

@@ -3,7 +3,7 @@
 **Tyler Cox – Frontend Developer**
 CST8319 – Software Development Project
 Student ID: 041164510
-Algonquin College – Demo 3 Submission
+Algonquin College – Demo 4 (Final) Submission
 
 ---
 
@@ -56,8 +56,9 @@ The backend needs to have these working:
 |--------|----------|-------------|
 | `GET` | `/api/dogs` | Dashboard, sighting form |
 | `GET` | `/api/dogs/{id}` | Dog profile page |
-| `GET` | `/api/sightings/dog/{id}` | Dog profile sighting count |
-| `POST` | `/api/sightings` | Sighting form |
+| `GET` | `/api/sightings/dog/{id}` | Dog profile — full sighting history |
+| `GET` | `/api/sightings` | Dashboard — heatmap data |
+| `POST` | `/api/sightings` | Sighting form (multipart/form-data with optional photo) |
 | `POST` | `/api/auth/login` | Login page |
 
 ---
@@ -68,7 +69,7 @@ The backend needs to have these working:
 
 Reads the `?id=` from the URL and fetches the dog's data. If the ID is missing, invalid, or the API returns a 404, it shows a friendly error message instead of breaking. There are three different error states depending on what went wrong.
 
-The sighting count comes from a separate API call. If that one fails it just shows nothing — it doesn't take down the whole page.
+**Demo 4 update:** The profile now shows a full, scrollable sighting history (newest first) instead of just the most recent sighting. Each entry displays the date, notes, and a verified/awaiting-review badge. The newest sighting is tagged with a "Latest" pill. The list is capped at 380px height with its own scroll area so the rest of the page layout stays stable.
 
 The "Report a Sighting" button at the bottom pre-fills the dogId into the sighting form URL automatically.
 
@@ -78,7 +79,7 @@ The main thing here is the GPS button. Tap it, allow location, and it fills in y
 
 The notes field is optional. The submit button stays disabled until coordinates are filled in. After a successful submit it shows a thank-you screen instead of just resetting the form silently.
 
-Photo upload is wired up with a live preview — the actual Cloudinary integration is on Alex's end.
+**Demo 4 update:** Photo upload now includes client-side validation — file type whitelist (JPG, PNG, WebP, HEIC/HEIF), 5 MB size cap, and empty-file guard. Rejected files show a specific inline error ("That photo is 7.42 MB. Please choose one under 5 MB."). Accepted photos show the filename and size in the preview. The form now submits as `multipart/form-data` so photos upload directly to the backend/Cloudinary pipeline.
 
 ### volunteer_dashboard.html
 
@@ -94,7 +95,7 @@ If you already have a valid token stored it skips the login screen entirely. Sup
 
 ## Known Limitations
 
-- **Photo upload**: The file input and preview work, but the actual upload to Cloudinary is handled by the backend. Right now `photoUrl` is submitted as `null`.
+- **Photo upload**: Photos are now uploaded via multipart/form-data and stored through Cloudinary. Client-side validation enforces a 5 MB limit and image-type whitelist.
 - **Token expiry**: Tokens expire after 24 hours. There's no refresh flow — it just redirects to login.
 - **Offline**: No service worker. Needs a connection to work.
 
@@ -113,13 +114,15 @@ The button needed to stay disabled until coordinates were filled in, but coordin
 ## File Structure
 
 ```
-stray-care-system/
-├── index.html
-├── dog_profile.html
-├── sighting_form.html
-├── volunteer_dashboard.html
-├── login.html
-├── styles.css
-├── images/
+frontend/
+├── index.html                 — landing page with featured dogs
+├── dog_profile.html           — dog profile + scrollable sighting history
+├── sighting_form.html         — GPS sighting form with photo validation
+├── volunteer_dashboard.html   — JWT-protected dashboard with heatmap
+├── login.html                 — volunteer login (JWT)
+├── styles.css                 — shared design system
+├── config.js                  — API keys (Google Maps)
+├── maps.js                    — Google Maps + sighting normalization utils
+├── images/                    — placeholder photos and icons
 └── README.md
 ```
