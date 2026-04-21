@@ -73,9 +73,9 @@ docker compose --env-file .env.docker up --build
 
 Services:
 
-- Frontend: `http://localhost:3000`
+- Frontend: `http://localhost:3069`
 - Backend API: `http://localhost:8080`
-- MySQL: `localhost:3306`
+- MySQL: `localhost:3369`
 
 Notes:
 
