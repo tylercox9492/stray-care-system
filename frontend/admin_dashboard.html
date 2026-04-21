@@ -241,6 +241,7 @@
         <p>CST8319 · Software Development Project · Algonquin College · 2026</p>
     </footer>
 
+    <script src="config.js"></script>
     <script>
         // Hamburger
         document.getElementById('hamburger-btn').addEventListener('click', () => {
@@ -249,7 +250,7 @@
             b.setAttribute('aria-expanded', open); m.setAttribute('aria-hidden', !open);
         });
 
-        const API_BASE = 'http://localhost:8080/api';
+        const API_BASE = window.APP_CONFIG?.API_BASE_URL || 'http://localhost:8080/api';
         let allUsers = [];
 
         function getToken() { return localStorage.getItem('jwt_token'); }

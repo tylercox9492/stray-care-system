@@ -57,6 +57,7 @@ This repository includes a `docker-compose.yml` that starts:
 
 - MySQL 8.4
 - the Spring Boot backend
+- the static frontend through Nginx
 
 The MySQL container automatically runs `database/schema.sql` the first time the database volume is created, so you do not need to create the schema manually.
 
@@ -72,6 +73,7 @@ docker compose --env-file .env.docker up --build
 
 Services:
 
+- Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8080`
 - MySQL: `localhost:3306`
 
@@ -80,16 +82,19 @@ Notes:
 - If you change `database/schema.sql` and want MySQL to re-run it from scratch, remove the `mysql_data` volume before starting again
 - The backend now reads database credentials from environment variables first, with local defaults as a fallback
 
-### 2. Configure the Frontend
+### 2. Configure the Frontend for Manual Local Runs
 
 Create a local `frontend/config.js` file containing a Google Maps API key, defined as a global configuration object accessible by the frontend scripts. This file is ignored by Git and should stay local:
 ```javascript
 window.APP_CONFIG = {
-    GOOGLE_MAPS_API_KEY: "your_api_key_here"
+    GOOGLE_MAPS_API_KEY: "your_api_key_here",
+    API_BASE_URL: "http://localhost:8080/api"
 };
 ```
 
-### 3. Run the Frontend
+If you are using Docker Compose for the frontend too, you do not need this file inside the container. The container generates its own `config.js` from `.env.docker`.
+
+### 3. Run the Frontend Manually
 
 From the `frontend/` directory, start a simple local server:
 ```bash

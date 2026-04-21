@@ -36,5 +36,19 @@ services:
     ports:
       - "8080:8080"
 
+  frontend:
+    build:
+      context: ./frontend
+    container_name: stray-care-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      API_BASE_URL: /api
+    ports:
+      - "3000:80"
+
 volumes:
   mysql_data:
