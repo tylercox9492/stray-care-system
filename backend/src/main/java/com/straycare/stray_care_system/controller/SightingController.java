@@ -53,8 +53,8 @@ public class SightingController {
             sighting.setReportedBy(reportedBy);
 
             if (photo != null && !photo.isEmpty()) {
-                String photoUrl = cloudinaryService.uploadFile(photo);
-                sighting.setPhotoUrl(photoUrl);
+                CloudinaryService.UploadResult photoUpload = cloudinaryService.uploadFile(photo);
+                sighting.setPhotoUrl(photoUpload.url());
             }
 
             Sighting savedSighting = sightingService.saveSighting(sighting);

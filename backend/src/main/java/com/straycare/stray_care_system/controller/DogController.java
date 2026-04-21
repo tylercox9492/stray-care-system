@@ -65,8 +65,8 @@ public class DogController {
             }
 
             if (photo != null && !photo.isEmpty()) {
-                String photoUrl = cloudinaryService.uploadFile(photo);
-                dog.setPhotoUrl(photoUrl);
+                CloudinaryService.UploadResult photoUpload = cloudinaryService.uploadFile(photo);
+                dog.setPhotoUrl(photoUpload.url());
             }
 
             Dog savedDog = dogService.saveDog(dog);
@@ -80,7 +80,7 @@ public class DogController {
         } catch (com.google.zxing.WriterException e) {
             return ResponseEntity.badRequest().body("Failed to generate QR code: " + e.getMessage());
         } catch (java.io.IOException e) {
-            return ResponseEntity.badRequest().body("Failed to process photo or QR code image: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to generate QR code image: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to create dog: " + e.getMessage());
         }
