@@ -51,55 +51,36 @@ The frontend consists of static HTML, CSS, and JavaScript files:
 
 ## How to Run the Project
 
-### 1. Set Up the Database
+### 1. Start the Database and Backend with Docker Compose
 
-1. Create a MySQL database (e.g., `stray_care_system`)
-2. Run the schema script:
-```sql
-   SOURCE database/schema.sql;
+This repository includes a `docker-compose.yml` that starts:
+
+- MySQL 8.4
+- the Spring Boot backend
+
+The MySQL container automatically runs `database/schema.sql` the first time the database volume is created, so you do not need to create the schema manually.
+
+Setup:
+
+1. Copy `.env.docker.example` to `.env.docker`
+2. Fill in the placeholder values in `.env.docker`
+3. Start the stack:
+
+```bash
+docker compose --env-file .env.docker up --build
 ```
-3. Copy `backend/.env.example` to `backend/.env` and fill in your local values.
-4. Set the environment variables from that file in your terminal or IDE run configuration before starting the backend.
 
-### 2. Configure the Backend
+Services:
 
-The backend reads sensitive values from environment variables. `backend/src/main/resources/application.properties` now contains placeholders only, so you should keep real values out of Git.
-
-Required backend environment variables:
-
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
-
-Example local setup:
-
-1. Copy `backend/.env.example` to `backend/.env`
-2. Replace the placeholder values with your own local credentials
-3. Export those variables before running Spring Boot
-
-Example PowerShell session:
-```powershell
-$env:CLOUDINARY_CLOUD_NAME="your_cloud_name_here"
-$env:CLOUDINARY_API_KEY="your_cloudinary_api_key_here"
-$env:CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"
-```
+- Backend API: `http://localhost:8080`
+- MySQL: `localhost:3306`
 
 Notes:
 
-- `backend/.env.example` is safe to commit because it contains placeholders only
-- `backend/.env` is for local reference and is ignored by Git
-- Spring Boot does not automatically load `.env` files by default, so make sure the variables are actually set in your shell or IDE before you run the app
+- If you change `database/schema.sql` and want MySQL to re-run it from scratch, remove the `mysql_data` volume before starting again
+- The backend now reads database credentials from environment variables first, with local defaults as a fallback
 
-### 3. Run the Backend
-
-From the `backend/` directory:
-```bash
-mvn spring-boot:run
-```
-
-The backend API will start (typically on `http://localhost:8080` unless configured otherwise).
-
-### 4. Configure the Frontend
+### 2. Configure the Frontend
 
 Create a local `frontend/config.js` file containing a Google Maps API key, defined as a global configuration object accessible by the frontend scripts. This file is ignored by Git and should stay local:
 ```javascript
@@ -108,7 +89,7 @@ window.APP_CONFIG = {
 };
 ```
 
-### 5. Run the Frontend
+### 3. Run the Frontend
 
 From the `frontend/` directory, start a simple local server:
 ```bash
@@ -118,6 +99,36 @@ python -m http.server <port>
 Then open in your browser:
 ```
 http://localhost:<port>
+```
+
+### 4. Manual Backend Setup Without Docker
+
+If you prefer to run MySQL and Spring Boot directly on your machine:
+
+1. Create a MySQL database such as `stray_care_system`
+2. Run the schema script manually:
+
+```sql
+SOURCE database/schema.sql;
+```
+
+3. Copy `backend/.env.example` to `backend/.env`
+4. Export those values into your shell or IDE run configuration before starting the backend
+5. From `backend/`, run:
+
+```bash
+mvn spring-boot:run
+```
+
+Example PowerShell session:
+
+```powershell
+$env:SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3306/stray_care_system"
+$env:SPRING_DATASOURCE_USERNAME="root"
+$env:SPRING_DATASOURCE_PASSWORD="your_database_password_here"
+$env:CLOUDINARY_CLOUD_NAME="your_cloud_name_here"
+$env:CLOUDINARY_API_KEY="your_cloudinary_api_key_here"
+$env:CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"
 ```
 
 ---

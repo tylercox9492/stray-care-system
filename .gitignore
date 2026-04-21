@@ -35,3 +35,4 @@ build/
 ### API Keys ###
 frontend/config.js
 backend/.env
+.env.docker
