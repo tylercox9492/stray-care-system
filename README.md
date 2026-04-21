@@ -67,9 +67,6 @@ The backend reads sensitive values from environment variables. `backend/src/main
 
 Required backend environment variables:
 
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
@@ -82,9 +79,6 @@ Example local setup:
 
 Example PowerShell session:
 ```powershell
-$env:SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3306/stray_care_system"
-$env:SPRING_DATASOURCE_USERNAME="root"
-$env:SPRING_DATASOURCE_PASSWORD="your_password_here"
 $env:CLOUDINARY_CLOUD_NAME="your_cloud_name_here"
 $env:CLOUDINARY_API_KEY="your_cloudinary_api_key_here"
 $env:CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"

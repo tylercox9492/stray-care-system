@@ -129,6 +129,42 @@
             </div>
         </section>
 
+        <!-- Verified sightings heatmap -->
+        <section class="section-white" aria-label="Verified community sightings">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-label">Community Sightings</span>
+                    <h2 class="section-title">Verified reports across the city.</h2>
+                    <p class="section-sub">A live view of approved sightings so the public can see where help is happening in real time.</p>
+                </div>
+                <div class="mini-heatmap-card">
+                    <div class="mini-heatmap-layout">
+                        <div class="mini-heatmap-copy">
+                            <h3>Every verified sighting adds to the picture.</h3>
+                            <p>Only reviewed reports appear here. During the demo, this gives visitors a quick sense that the system is active and grounded in real location data.</p>
+                            <div class="mini-heatmap-stats" aria-label="Verified sighting totals">
+                                <div class="mini-heatmap-stat">
+                                    <span class="mini-heatmap-stat-label">Verified Sightings</span>
+                                    <span class="mini-heatmap-stat-value" id="verified-sightings-count">0</span>
+                                </div>
+                                <div class="mini-heatmap-stat">
+                                    <span class="mini-heatmap-stat-label">Latest Verified</span>
+                                    <span class="mini-heatmap-stat-value" id="verified-sightings-latest">Waiting</span>
+                                </div>
+                            </div>
+                            <p class="mini-heatmap-note" id="verified-sightings-note">Loading approved sightings from the network.</p>
+                        </div>
+                        <div class="mini-heatmap-map-wrap">
+                            <div id="landing-heatmap-empty" class="heatmap-empty-state is-visible" aria-live="polite">
+                                Approved sightings will appear here once volunteers verify reports.
+                            </div>
+                            <div id="landing-heatmap" class="mini-heatmap-map" aria-label="Map of verified stray dog sightings"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- How it works -->
         <section class="section-white" aria-label="How it works">
             <div class="container">
@@ -194,6 +230,8 @@
         <p style="margin-top:4px;">Tyler Cox · Frontend Developer</p>
     </footer>
 
+    <script src="config.js"></script>
+    <script src="maps.js"></script>
     <script>
         // Hamburger
         const hamburger  = document.getElementById('hamburger-btn');
@@ -219,11 +257,61 @@
             catch { return ''; }
         }
 
+        function fmtShortDate(iso) {
+            if (!iso) return 'Waiting';
+            try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+            catch { return 'Waiting'; }
+        }
+
         const STATUS_DOT = {
             active:    { cls: 'active',    label: 'Active' },
             adopted:   { cls: 'adopted',   label: 'Adopted' },
             recovered: { cls: 'relocated', label: 'Recovered' }
         };
+
+        async function loadVerifiedSightingsHeatmap() {
+            const countEl = document.getElementById('verified-sightings-count');
+            const latestEl = document.getElementById('verified-sightings-latest');
+            const noteEl = document.getElementById('verified-sightings-note');
+            const emptyEl = document.getElementById('landing-heatmap-empty');
+
+            try {
+                const res = await fetch(`${API_BASE}/sightings/verified`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                const sightings = (await res.json())
+                    .map(normalizeSighting)
+                    .filter(sighting => sighting.verified);
+
+                countEl.textContent = String(sightings.length);
+                latestEl.textContent = sightings.length ? fmtShortDate(sightings[0].reportedAt) : 'Waiting';
+                noteEl.textContent = sightings.length
+                    ? 'Updated from the latest volunteer-approved reports.'
+                    : 'No approved sightings yet. This panel will wake up as soon as reports are verified.';
+
+                await loadGoogleMapsApi();
+                renderSightingsHeatmap(sightings, {
+                    mapElementId: 'landing-heatmap',
+                    emptyElementId: 'landing-heatmap-empty',
+                    emptyMessage: 'Approved sightings will appear here once volunteers verify reports.',
+                    zoom: 11,
+                    radius: 34,
+                    opacity: 0.75,
+                    compact: true
+                });
+
+                emptyEl.classList.toggle('is-visible', sightings.length === 0);
+            } catch (error) {
+                console.error('Failed to load verified sightings heatmap:', error);
+                countEl.textContent = '0';
+                latestEl.textContent = 'Offline';
+                noteEl.textContent = 'The live map is temporarily unavailable, but the rest of the page is still ready for the demo.';
+                emptyEl.textContent = 'The verified sightings map is temporarily unavailable.';
+                emptyEl.classList.add('is-visible');
+                const mapEl = document.getElementById('landing-heatmap');
+                if (mapEl) mapEl.style.display = 'none';
+            }
+        }
 
         async function loadFeatured() {
             const grid = document.getElementById('featured-grid');
@@ -282,7 +370,10 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', loadFeatured);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFeatured();
+            loadVerifiedSightingsHeatmap();
+        });
     </script>
 </body>
 </html>

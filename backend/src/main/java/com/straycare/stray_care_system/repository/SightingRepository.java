@@ -10,4 +10,5 @@ import com.straycare.stray_care_system.model.Sighting;
 @Repository
 public interface SightingRepository extends JpaRepository<Sighting, Long> {
     List<Sighting> findByDogId(Long dogId);
+    List<Sighting> findByVerifiedTrueOrderByReportedAtDesc();
 }

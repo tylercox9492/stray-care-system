@@ -118,9 +118,19 @@ function buildSightingInfoWindow(sighting) {
     `;
 }
 
-function renderSightingsHeatmap(sightings) {
-    const mapEl = document.getElementById("dashboard-map");
-    const emptyEl = document.getElementById("heatmap-empty");
+function renderSightingsHeatmap(sightings, options = {}) {
+    const {
+        mapElementId = "dashboard-map",
+        emptyElementId = "heatmap-empty",
+        emptyMessage = "No sightings available for heatmap.",
+        zoom = 12,
+        radius = 28,
+        opacity = 0.7,
+        compact = false
+    } = options;
+
+    const mapEl = document.getElementById(mapElementId);
+    const emptyEl = document.getElementById(emptyElementId);
 
     if (!mapEl || !emptyEl) {
         return;
@@ -133,7 +143,7 @@ function renderSightingsHeatmap(sightings) {
     if (validSightings.length === 0) {
         mapEl.style.display = "none";
         emptyEl.style.display = "block";
-        emptyEl.textContent = "No sightings available for heatmap.";
+        emptyEl.textContent = emptyMessage;
         return;
     }
 
@@ -145,7 +155,10 @@ function renderSightingsHeatmap(sightings) {
 
     const map = new google.maps.Map(mapEl, {
         center: { lat: latest.latitude, lng: latest.longitude },
-        zoom: 12
+        zoom,
+        mapTypeControl: false,
+        streetViewControl: !compact,
+        fullscreenControl: !compact
     });
 
     const points = validSightings.map(
@@ -153,7 +166,9 @@ function renderSightingsHeatmap(sightings) {
     );
 
     const heatmap = new google.maps.visualization.HeatmapLayer({
-        data: points
+        data: points,
+        radius,
+        opacity
     });
 
     heatmap.setMap(map);

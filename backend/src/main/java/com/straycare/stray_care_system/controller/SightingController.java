@@ -69,6 +69,11 @@ public class SightingController {
         return ResponseEntity.ok(sightingService.getAllSightings());
     }
 
+    @GetMapping("/verified")
+    public ResponseEntity<List<Sighting>> getVerifiedSightings() {
+        return ResponseEntity.ok(sightingService.getVerifiedSightings());
+    }
+
     @GetMapping("/dog/{dogId}")
     public ResponseEntity<List<Sighting>> getSightingsByDog(@PathVariable Long dogId) {
         return ResponseEntity.ok(sightingService.getSightingsByDogId(dogId));

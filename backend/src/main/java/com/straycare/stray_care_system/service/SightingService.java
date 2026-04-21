@@ -20,13 +20,19 @@ public class SightingService {
     public List<Sighting> getSightingsByDogId(Long dogId) {
         return sightingRepository.findByDogId(dogId);
     }
+
     public List<Sighting> getAllSightings() {
-    return sightingRepository.findAll();
-}
+        return sightingRepository.findAll();
+    }
+
+    public List<Sighting> getVerifiedSightings() {
+        return sightingRepository.findByVerifiedTrueOrderByReportedAtDesc();
+    }
+
     public Sighting verifySighting(Long id) {
-    return sightingRepository.findById(id).map(sighting -> {
-        sighting.setVerified(true);
-        return sightingRepository.save(sighting);
-    }).orElseThrow(() -> new RuntimeException("Sighting not found with id " + id));
-}
+        return sightingRepository.findById(id).map(sighting -> {
+            sighting.setVerified(true);
+            return sightingRepository.save(sighting);
+        }).orElseThrow(() -> new RuntimeException("Sighting not found with id " + id));
+    }
 }
