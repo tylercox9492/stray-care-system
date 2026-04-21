@@ -54,19 +54,66 @@ function sortSightingsNewestFirst(sightings) {
     });
 }
 
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function buildCloudinaryThumbnailUrl(photoUrl) {
+    if (!photoUrl) {
+        return null;
+    }
+
+    if (!photoUrl.includes("/res.cloudinary.com/")) {
+        return photoUrl;
+    }
+
+    if (photoUrl.includes("/upload/")) {
+        return photoUrl.replace(
+            "/upload/",
+            "/upload/c_fill,w_120,h_120,q_auto,f_auto/"
+        );
+    }
+
+    return photoUrl;
+}
+
 function buildSightingInfoWindow(sighting) {
     const reported = sighting.reportedAt
-        ? new Date(sighting.reportedAt).toLocaleString()
+        ? new Date(sighting.reportedAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        })
         : "Unknown";
 
     const notes = sighting.notes?.trim()
         ? sighting.notes
         : "No notes provided";
 
+    const thumbnailUrl = buildCloudinaryThumbnailUrl(sighting.photoUrl);
+    const thumbnailMarkup = thumbnailUrl
+        ? `
+            <div style="margin-top: 10px;">
+                <img
+                    src="${escapeHtml(thumbnailUrl)}"
+                    alt="Sighting photo thumbnail"
+                    loading="lazy"
+                    style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; display: block;"
+                >
+            </div>
+        `
+        : "";
+
     return `
         <div style="max-width: 240px;">
-            <div><strong>Reported:</strong> ${reported}</div>
-            <div style="margin-top: 6px;"><strong>Notes:</strong> ${notes}</div>
+            <div><strong>Date:</strong> ${escapeHtml(reported)}</div>
+            <div style="margin-top: 6px;"><strong>Notes:</strong> ${escapeHtml(notes)}</div>
+            ${thumbnailMarkup}
         </div>
     `;
 }
@@ -136,20 +183,22 @@ function renderDogSightingsMap(sightings) {
         zoom: 14
     });
 
+    const infoWindow = new google.maps.InfoWindow();
+
     sorted.forEach(sighting => {
         const marker = new google.maps.Marker({
             position: {
                 lat: sighting.latitude,
                 lng: sighting.longitude
             },
-            map
-        });
-
-        const infoWindow = new google.maps.InfoWindow({
-            content: buildSightingInfoWindow(sighting)
+            map,
+            title: sighting.reportedAt
+                ? `Sighting on ${new Date(sighting.reportedAt).toLocaleDateString("en-US")}`
+                : "Sighting"
         });
 
         marker.addListener("click", () => {
+            infoWindow.setContent(buildSightingInfoWindow(sighting));
             infoWindow.open(map, marker);
         });
     });
