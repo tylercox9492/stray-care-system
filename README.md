@@ -58,15 +58,43 @@ The frontend consists of static HTML, CSS, and JavaScript files:
 ```sql
    SOURCE database/schema.sql;
 ```
-3. Ensure the database name and credentials match those in:
-   `backend/src/main/resources/application.properties`
+3. Copy `backend/.env.example` to `backend/.env` and fill in your local values.
+4. Set the environment variables from that file in your terminal or IDE run configuration before starting the backend.
 
 ### 2. Configure the Backend
 
-Update `application.properties` with:
+The backend reads sensitive values from environment variables. `backend/src/main/resources/application.properties` now contains placeholders only, so you should keep real values out of Git.
 
-- MySQL connection details
-- Cloudinary credentials (cloud name, API key, secret)
+Required backend environment variables:
+
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+
+Example local setup:
+
+1. Copy `backend/.env.example` to `backend/.env`
+2. Replace the placeholder values with your own local credentials
+3. Export those variables before running Spring Boot
+
+Example PowerShell session:
+```powershell
+$env:SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3306/stray_care_system"
+$env:SPRING_DATASOURCE_USERNAME="root"
+$env:SPRING_DATASOURCE_PASSWORD="your_password_here"
+$env:CLOUDINARY_CLOUD_NAME="your_cloud_name_here"
+$env:CLOUDINARY_API_KEY="your_cloudinary_api_key_here"
+$env:CLOUDINARY_API_SECRET="your_cloudinary_api_secret_here"
+```
+
+Notes:
+
+- `backend/.env.example` is safe to commit because it contains placeholders only
+- `backend/.env` is for local reference and is ignored by Git
+- Spring Boot does not automatically load `.env` files by default, so make sure the variables are actually set in your shell or IDE before you run the app
 
 ### 3. Run the Backend
 
@@ -79,7 +107,7 @@ The backend API will start (typically on `http://localhost:8080` unless configur
 
 ### 4. Configure the Frontend
 
-Create a `config.js` file containing a Google Maps API key, defined as a global configuration object accessible by the frontend scripts:
+Create a local `frontend/config.js` file containing a Google Maps API key, defined as a global configuration object accessible by the frontend scripts. This file is ignored by Git and should stay local:
 ```javascript
 window.APP_CONFIG = {
     GOOGLE_MAPS_API_KEY: "your_api_key_here"
